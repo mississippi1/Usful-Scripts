@@ -1,0 +1,24 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Run Gym Registration Script",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/gym_membership_registration.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "python": "${workspaceFolder}/.venv/bin/python"
+        },
+        {
+            "name": "Python: Debug Gym Registration Script",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/gym_membership_registration.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "stopOnEntry": false,
+            "python": "${workspaceFolder}/.venv/bin/python"
+        }
+    ]
+}
