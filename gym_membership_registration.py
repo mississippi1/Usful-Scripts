@@ -13,6 +13,13 @@ password = "Computer1!"
 target_url = "https://onlineanmeldung.hochschulsport.uni-heidelberg.de/oa_oeff/info.php"
 login_url = "https://onlineanmeldung.hochschulsport.uni-heidelberg.de/oa_oeff/login.php"
 
+# Button text to search for when registration opens
+# TODO: Update this with the actual button text when you know it
+REGISTRATION_BUTTON_TEXT = "BUTTON_TEXT_HERE"  # e.g., "Anmelden", "Jetzt buchen", etc.
+
+# Set to True to click any button that appears when "nicht buchbar" disappears (fallback mode)
+FALLBACK_TO_ANY_BUTTON = True
+
 print("Starting Chrome browser...")
 # Set up Selenium WebDriver (Chrome with automatic driver management)
 service = Service(ChromeDriverManager().install())
@@ -101,6 +108,7 @@ try:
     
     # Polling for registration button
     print("Starting to poll for registration button...")
+    print(f"Looking for button with text: '{REGISTRATION_BUTTON_TEXT}'")
     print(f"Will check every 0.5 seconds for 2 hours")
     start_time = time.time()
     timeout = 2 * 60 * 60  # 2 hours in seconds
@@ -116,31 +124,72 @@ try:
             driver.refresh()
             time.sleep(0.3)  # Give page a moment to load
             
-            # Try to find registration button by text
+            # Check if the "nicht buchbar" message is still present
+            page_text = driver.find_element(By.TAG_NAME, "body").text
+            if "nicht buchbar" in page_text.lower():
+                print(f"  Course still not bookable (waiting for registration period)")
+                time.sleep(0.5)
+                continue
+            
+            # Registration period has started! Look for buttons
+            print(f"  ✓ Registration period started! ('nicht buchbar' message is gone)")
+            
+            # Look for the registration button with the specific text
             buttons = driver.find_elements(By.TAG_NAME, "button")
             links = driver.find_elements(By.TAG_NAME, "a")
             inputs = driver.find_elements(By.TAG_NAME, "input")
             
             all_elements = buttons + links + inputs
             
-            for element in all_elements:
-                try:
-                    element_text = element.text.lower() if element.text else ""
-                    element_value = element.get_attribute("value")
-                    if element_value:
-                        element_text += " " + element_value.lower()
-                    
-                    if any(word in element_text for word in ["register", "anmelden", "sign up", "buchung", "anmeldung", "buchen"]):
-                        print(f"✓ Registration button/link found: {element_text}")
-                        element.click()
-                        print("✓ Registration button clicked!")
-                        time.sleep(3)  # Wait to see result
-                        print("Registration successful! Closing browser...")
-                        driver.quit()
-                        exit(0)
-                except Exception as e:
-                    # Skip elements that can't be interacted with
-                    pass
+            # First, try to find button with the specific text you provided
+            found_specific = False
+            if REGISTRATION_BUTTON_TEXT != "BUTTON_TEXT_HERE":
+                for element in all_elements:
+                    try:
+                        element_text = element.text if element.text else ""
+                        element_value = element.get_attribute("value")
+                        if element_value:
+                            element_text += " " + element_value
+                        
+                        # Check if the element contains the registration button text
+                        if REGISTRATION_BUTTON_TEXT.lower() in element_text.lower():
+                            print(f"✓ Registration button/link found with specific text: '{element_text}'")
+                            element.click()
+                            print("✓ Registration button clicked!")
+                            time.sleep(3)  # Wait to see result
+                            print("Registration successful! Closing browser...")
+                            driver.quit()
+                            exit(0)
+                    except Exception as e:
+                        # Skip elements that can't be interacted with
+                        pass
+            
+            # Fallback: If specific text not found or not set, click any clickable button/link
+            if FALLBACK_TO_ANY_BUTTON:
+                print(f"  Looking for any registration button as fallback...")
+                for element in all_elements:
+                    try:
+                        element_text = element.text if element.text else ""
+                        element_value = element.get_attribute("value")
+                        if element_value:
+                            element_text += " " + element_value
+                        
+                        # Look for common registration-related terms
+                        registration_keywords = ["anmeld", "buch", "register", "sign up", "eintrag"]
+                        if any(keyword in element_text.lower() for keyword in registration_keywords):
+                            print(f"✓ Registration button/link found (fallback): '{element_text}'")
+                            element.click()
+                            print("✓ Registration button clicked!")
+                            time.sleep(3)  # Wait to see result
+                            print("Registration successful! Closing browser...")
+                            driver.quit()
+                            exit(0)
+                    except Exception as e:
+                        # Skip elements that can't be interacted with
+                        pass
+                
+                print(f"  Warning: 'nicht buchbar' is gone but no registration button found!")
+            
         except Exception as e:
             print(f"Error on iteration {iteration}: {e}")
         
