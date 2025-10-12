@@ -13,8 +13,18 @@ password = "Computer1!"
 login_url = "https://onlineanmeldung.hochschulsport.uni-heidelberg.de/oa_oeff/login.php"
 
 # Button text to search for when registration opens
-# TODO: Update this with the actual button text when you know it
-REGISTRATION_BUTTON_TEXT = "BUTTON_TEXT_HERE"  # e.g., "Anmelden", "Jetzt buchen", etc.
+# "Booking the course is binding" in German - with multiple variations
+REGISTRATION_BUTTON_TEXTS = [
+    "Die Buchung des Kurses ist verbindlich",
+    "Buchung ist verbindlich",
+    "Kurs verbindlich buchen",
+    "Verbindlich anmelden",
+    "Jetzt verbindlich buchen",
+    "Zur verbindlichen Buchung",
+    "Platz buchen",
+    "Anmelden",
+    "Buchen"
+]
 
 # Set to True to click any button that appears when "nicht buchbar" disappears (fallback mode)
 FALLBACK_TO_ANY_BUTTON = True
@@ -189,7 +199,7 @@ try:
     
     # Polling for registration button
     print("Starting to poll for registration button...")
-    print(f"Looking for button with text: '{REGISTRATION_BUTTON_TEXT}'")
+    print(f"Looking for buttons with these texts: {', '.join(REGISTRATION_BUTTON_TEXTS[:3])}...")
     print(f"Will check every 0.5 seconds for 2 hours")
     start_time = time.time()
     timeout = 2 * 60 * 60  # 2 hours in seconds
@@ -205,11 +215,22 @@ try:
             driver.refresh()
             time.sleep(0.3)  # Give page a moment to load
             
+            # Handle potential refresh confirmation popup
+            try:
+                # Try to accept any alert/popup that might appear
+                alert = driver.switch_to.alert
+                print(f"  Alert detected: '{alert.text}' - Accepting...")
+                alert.accept()
+                time.sleep(0.2)
+            except:
+                # No alert present, continue normally
+                pass
+            
             # Check if the "nicht buchbar" message is still present
             page_text = driver.find_element(By.TAG_NAME, "body").text
             if "nicht buchbar" in page_text.lower():
                 print(f"  Course still not bookable (waiting for registration period)")
-                time.sleep(0.5)
+                time.sleep(0.1)
                 continue
             
             # Registration period has started! Look for buttons
@@ -222,9 +243,9 @@ try:
             
             all_elements = buttons + links + inputs
             
-            # First, try to find button with the specific text you provided
+            # First, try to find button with any of the specific texts you provided
             found_specific = False
-            if REGISTRATION_BUTTON_TEXT != "BUTTON_TEXT_HERE":
+            for button_text in REGISTRATION_BUTTON_TEXTS:
                 for element in all_elements:
                     try:
                         element_text = element.text if element.text else ""
@@ -233,10 +254,21 @@ try:
                             element_text += " " + element_value
                         
                         # Check if the element contains the registration button text
-                        if REGISTRATION_BUTTON_TEXT.lower() in element_text.lower():
-                            print(f"✓ Registration button/link found with specific text: '{element_text}'")
+                        if button_text.lower() in element_text.lower():
+                            print(f"✓ Registration button/link found with text: '{element_text}'")
+                            print(f"  Matched search term: '{button_text}'")
                             element.click()
                             print("✓ Registration button clicked!")
+                            
+                            # Handle potential confirmation popup after clicking
+                            try:
+                                time.sleep(0.5)
+                                alert = driver.switch_to.alert
+                                print(f"  Alert after click: '{alert.text}' - Accepting...")
+                                alert.accept()
+                            except:
+                                pass
+                            
                             time.sleep(3)  # Wait to see result
                             print("Registration successful! Closing browser...")
                             driver.quit()
@@ -244,6 +276,9 @@ try:
                     except Exception as e:
                         # Skip elements that can't be interacted with
                         pass
+                
+                if found_specific:
+                    break
             
             # Fallback: If specific text not found or not set, click any clickable button/link
             if FALLBACK_TO_ANY_BUTTON:
@@ -255,16 +290,46 @@ try:
                         if element_value:
                             element_text += " " + element_value
                         
-                        # Look for common registration-related terms
-                        registration_keywords = ["anmeld", "buch", "register", "sign up", "eintrag"]
-                        if any(keyword in element_text.lower() for keyword in registration_keywords):
-                            print(f"✓ Registration button/link found (fallback): '{element_text}'")
-                            element.click()
-                            print("✓ Registration button clicked!")
-                            time.sleep(3)  # Wait to see result
-                            print("Registration successful! Closing browser...")
-                            driver.quit()
-                            exit(0)
+                        # Look for common registration-related terms, but be more specific
+                        # Only match if it's a clickable element with these specific patterns
+                        if element_text and len(element_text) < 100:  # Ignore long text blocks
+                            # Must be a button/input, and contain booking-related text
+                            is_input_or_button = element.tag_name in ["input", "button"] or (
+                                element.tag_name == "a" and element.get_attribute("href")
+                            )
+                            
+                            if is_input_or_button:
+                                # Look for specific phrases that indicate booking action
+                                action_keywords = [
+                                    "verbindlich buchen",
+                                    "jetzt buchen", 
+                                    "buchen",
+                                    "anmelden",
+                                    "zur buchung",
+                                    "kurs buchen"
+                                ]
+                                
+                                if any(keyword in element_text.lower() for keyword in action_keywords):
+                                    # Exclude navigation and header elements
+                                    if "information und buchung" not in element_text.lower() and \
+                                       "kursanmeldung" not in element_text.lower():
+                                        print(f"✓ Registration button/link found (fallback): '{element_text}'")
+                                        element.click()
+                                        print("✓ Registration button clicked!")
+                                        
+                                        # Handle potential confirmation popup after clicking
+                                        try:
+                                            time.sleep(0.5)
+                                            alert = driver.switch_to.alert
+                                            print(f"  Alert after click: '{alert.text}' - Accepting...")
+                                            alert.accept()
+                                        except:
+                                            pass
+                                        
+                                        time.sleep(3)  # Wait to see result
+                                        print("Registration successful! Closing browser...")
+                                        driver.quit()
+                                        exit(0)
                     except Exception as e:
                         # Skip elements that can't be interacted with
                         pass
@@ -274,7 +339,7 @@ try:
         except Exception as e:
             print(f"Error on iteration {iteration}: {e}")
         
-        time.sleep(0.5)
+        time.sleep(0.1)
 
     print("Registration button not found in 2 hours.")
     driver.quit()
