@@ -10,7 +10,6 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 email = "tomer.peker@stud.uni-heidelberg.de"
 password = "Computer1!"
-target_url = "https://onlineanmeldung.hochschulsport.uni-heidelberg.de/oa_oeff/info.php"
 login_url = "https://onlineanmeldung.hochschulsport.uni-heidelberg.de/oa_oeff/login.php"
 
 # Button text to search for when registration opens
@@ -101,10 +100,92 @@ try:
     time.sleep(3)  # Wait for login to complete
     print(f"Current URL after login: {driver.current_url}")
     
-    # Navigate to target URL
-    print(f"Navigating to target page: {target_url}")
-    driver.get(target_url)
-    time.sleep(2)
+    # Step 1: Click "Kursanmeldung" link
+    print("\nStep 1: Looking for 'Kursanmeldung' link...")
+    try:
+        kursanmeldung_link = wait.until(
+            EC.element_to_be_clickable((By.PARTIAL_LINK_TEXT, "Kursanmeldung"))
+        )
+        print(f"✓ Found 'Kursanmeldung' link")
+        kursanmeldung_link.click()
+        time.sleep(2)
+        print(f"✓ Clicked 'Kursanmeldung', current URL: {driver.current_url}")
+    except Exception as e:
+        print(f"Error finding 'Kursanmeldung' link: {e}")
+        raise
+    
+    # Step 2: Click "Fitness- und Kraftstudio" link
+    print("\nStep 2: Looking for 'Fitness- und Kraftstudio' link...")
+    try:
+        # Try different variations of the text
+        fitness_link = None
+        for text_variant in ["Fitness- und Kraftstudio", "Fitness", "Kraftstudio"]:
+            try:
+                fitness_link = wait.until(
+                    EC.element_to_be_clickable((By.PARTIAL_LINK_TEXT, text_variant))
+                )
+                print(f"✓ Found link with text containing '{text_variant}'")
+                break
+            except:
+                continue
+        
+        if fitness_link:
+            fitness_link.click()
+            time.sleep(2)
+            print(f"✓ Clicked 'Fitness- und Kraftstudio', current URL: {driver.current_url}")
+        else:
+            raise Exception("Could not find 'Fitness- und Kraftstudio' link")
+    except Exception as e:
+        print(f"Error finding 'Fitness- und Kraftstudio' link: {e}")
+        raise
+    
+    # Step 3: Click "Info und Buchung" button for "KraftraumCARD" (not Nebenzeiten)
+    print("\nStep 3: Looking for 'Info und Buchung' button for 'KraftraumCARD'...")
+    try:
+        # Look for the table row containing "KraftraumCARD" but NOT "Nebenzeiten"
+        # Then find the "Info und Buchung" button in that row
+        info_buchung_found = False
+        
+        # Strategy: Find all table rows, identify the one with "KraftraumCARD" without "Nebenzeiten"
+        # and click the Info und Buchung button in that row
+        try:
+            # Find all rows in the table
+            rows = driver.find_elements(By.TAG_NAME, "tr")
+            print(f"  Found {len(rows)} table rows")
+            
+            for row in rows:
+                row_text = row.text
+                # Check if this row contains "KraftraumCARD" but not "Nebenzeiten"
+                if "KraftraumCARD" in row_text and "Nebenzeiten" not in row_text:
+                    print(f"  ✓ Found KraftraumCARD row (without Nebenzeiten): {row_text[:100]}")
+                    
+                    # Find the "Info und Buchung" button/link in this specific row
+                    try:
+                        # Try to find input, button, or link with "Info und Buchung" text in this row
+                        info_button = row.find_element(By.XPATH, ".//input[@value='Info und Buchung'] | .//button[contains(text(), 'Info und Buchung')] | .//a[contains(text(), 'Info und Buchung')]")
+                        print(f"  ✓ Found 'Info und Buchung' button in this row")
+                        info_button.click()
+                        time.sleep(2)
+                        print(f"✓ Clicked 'Info und Buchung' for KraftraumCARD, current URL: {driver.current_url}")
+                        info_buchung_found = True
+                        break
+                    except Exception as e:
+                        print(f"  Could not find button in this row: {e}")
+                        continue
+            
+            if not info_buchung_found:
+                raise Exception("Could not find 'Info und Buchung' button for KraftraumCARD row")
+                
+        except Exception as e:
+            print(f"Error in table search: {e}")
+            raise
+            
+    except Exception as e:
+        print(f"Error finding 'Info und Buchung' button: {e}")
+        raise
+    
+    print("\n✓ Successfully navigated to KraftraumCARD booking page!")
+    print(f"Final URL: {driver.current_url}\n")
     
     # Polling for registration button
     print("Starting to poll for registration button...")
