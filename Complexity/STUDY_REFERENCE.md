@@ -4,6 +4,10 @@ Built from **all 51 unique files** in the `Complexity` folder (lectures 1–13, 
 
 **Notation used in this course:** ≤m = mapping reduction, ≤p = polynomial-time reduction, ≤L = log-space reduction. "Decides" = halts on every input with the right answer; "recognizes" = accepts exactly L, may loop on non-members.
 
+![Class-inclusion map](complexity-classes-map.svg)
+
+*Full class-inclusion map: randomized classes (per the standard diagram, incl. PP/BQP for context) nested inside PSPACE ⊆ EXP ⊆ R = RE ∩ coRE, with L ⊆ NL ⊆ P at the core. NP is deliberately not drawn (RP ⊆ NP ⊆ PSPACE, but NP vs BPP is unknown).*
+
 ---
 
 ## The Master Table

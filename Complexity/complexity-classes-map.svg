@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1330" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <rect x="0" y="0" width="1000" height="1330" fill="#ffffff"/>
+
+  <text x="500" y="40" text-anchor="middle" font-size="21" font-weight="700" fill="#3d3929">Class-inclusion map — computability ⊇ complexity</text>
+  <text x="500" y="62" text-anchor="middle" font-size="12.5" fill="#8a7f6d">Nested = contained. Dashed† = outside the course syllabus (kept from the source diagram for context).</text>
+
+  <!-- All languages -->
+  <rect x="20" y="80" width="960" height="1175" rx="14" fill="#FBFAF7" stroke="#c9c1b4" stroke-width="1.5"/>
+  <text x="42" y="110" font-size="16" font-weight="700" fill="#3d3929">All languages over Σ*</text>
+  <text x="958" y="110" text-anchor="end" font-size="11.5" fill="#8a7f6d">∉ RE ∪ coRE:  ALL_TM,  REG_TM,  NY-HALT</text>
+
+  <!-- RE and coRE (overlap = R) -->
+  <rect x="45"  y="128" width="710" height="1058" rx="60" fill="#E8965A" fill-opacity="0.07" stroke="#C77B3A" stroke-width="1.6"/>
+  <rect x="245" y="128" width="710" height="1058" rx="60" fill="#E8965A" fill-opacity="0.07" stroke="#C77B3A" stroke-width="1.6"/>
+  <text x="75"  y="163" font-size="17" font-weight="700" fill="#3d3929">RE</text>
+  <text x="75"  y="183" font-size="11.5" fill="#8a7f6d">HALT, A_TM (RE-complete)</text>
+  <text x="925" y="163" text-anchor="end" font-size="17" font-weight="700" fill="#3d3929">coRE</text>
+  <text x="925" y="183" text-anchor="end" font-size="11.5" fill="#8a7f6d">HALT&#773;, SELF-NO-ACC</text>
+  <text x="500" y="163" text-anchor="middle" font-size="17" font-weight="700" fill="#3d3929">R = RE ∩ coRE</text>
+  <text x="500" y="183" text-anchor="middle" font-size="11.5" fill="#8a7f6d">decidable</text>
+
+  <!-- Nested time/space rings -->
+  <ellipse cx="500" cy="705" rx="245" ry="490" fill="#FCF0E2" stroke="#B98A55" stroke-width="1.2"/>
+  <text x="500" y="243" text-anchor="middle" font-size="15.5" font-weight="700" fill="#4a3b2a">EXP</text>
+
+  <ellipse cx="500" cy="705" rx="222" ry="445" fill="#FAE7D0" stroke="#B98A55" stroke-width="1.2"/>
+  <text x="500" y="288" text-anchor="middle" font-size="15.5" font-weight="700" fill="#4a3b2a">PSPACE = NPSPACE</text>
+
+  <ellipse cx="500" cy="705" rx="199" ry="400" fill="#F8DDBD" stroke="#9a9a9a" stroke-width="1.2" stroke-dasharray="6 4"/>
+  <text x="500" y="333" text-anchor="middle" font-size="15" font-weight="600" fill="#6b6152">PP †</text>
+
+  <ellipse cx="500" cy="705" rx="176" ry="355" fill="#F6D3AA" stroke="#9a9a9a" stroke-width="1.2" stroke-dasharray="6 4"/>
+  <text x="500" y="378" text-anchor="middle" font-size="15" font-weight="600" fill="#6b6152">BQP †</text>
+
+  <ellipse cx="500" cy="705" rx="153" ry="310" fill="#F3C897" stroke="#B98A55" stroke-width="1.2"/>
+  <text x="500" y="423" text-anchor="middle" font-size="15.5" font-weight="700" fill="#4a3b2a">BPP</text>
+
+  <!-- RP / coRP lens -->
+  <ellipse cx="460" cy="785" rx="100" ry="200" fill="#F0BE85" fill-opacity="0.65" stroke="#B98A55" stroke-width="1.2"/>
+  <ellipse cx="540" cy="785" rx="100" ry="200" fill="#F0BE85" fill-opacity="0.65" stroke="#B98A55" stroke-width="1.2"/>
+  <text x="398" y="655" text-anchor="middle" font-size="15" font-weight="700" fill="#4a3b2a">RP</text>
+  <text x="602" y="655" text-anchor="middle" font-size="15" font-weight="700" fill="#4a3b2a">coRP</text>
+
+  <ellipse cx="500" cy="800" rx="50" ry="160" fill="#E9A863" stroke="#A9763F" stroke-width="1.2"/>
+  <text x="500" y="668" text-anchor="middle" font-size="14" font-weight="700" fill="#3d3020">ZPP</text>
+
+  <ellipse cx="500" cy="835" rx="39" ry="115" fill="#E29B51" stroke="#A9763F" stroke-width="1.2"/>
+  <text x="500" y="746" text-anchor="middle" font-size="14" font-weight="700" fill="#3d3020">P</text>
+
+  <ellipse cx="500" cy="862" rx="30" ry="78" fill="#DA8D40" stroke="#96682F" stroke-width="1.2"/>
+  <text x="500" y="808" text-anchor="middle" font-size="13" font-weight="700" fill="#33270f">NL</text>
+
+  <ellipse cx="500" cy="884" rx="22" ry="44" fill="#D07F30" stroke="#96682F" stroke-width="1.2"/>
+  <text x="500" y="890" text-anchor="middle" font-size="13" font-weight="700" fill="#2b2008">L</text>
+
+  <!-- Footnotes -->
+  <text x="45" y="1214" font-size="12.5" fill="#5c5342">Chain:  L ⊆ NL ⊆ P ⊆ ZPP ⊆ RP ⊆ {BPP, NP} ⊆ PSPACE = NPSPACE ⊆ EXP ⊆ R = RE ∩ coRE ⊊ RE</text>
+  <text x="45" y="1234" font-size="11.5" fill="#8a7f6d">NP is not drawn: RP ⊆ NP ⊆ PSPACE, but NP vs BPP/BQP is unknown.  ZPP = RP ∩ coRP;  NL = coNL (Immerman).</text>
+  <text x="45" y="1250" font-size="11.5" fill="#8a7f6d">Known strict separations:  NL ⊊ PSPACE,  P ⊊ EXP,  PSPACE ⊊ EXPSPACE,  R ⊊ RE.  Everything else adjacent is open (L=NL? P=NP? …).</text>
+</svg>
