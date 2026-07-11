@@ -86,6 +86,57 @@ Built from **all 51 unique files** in the `Complexity` folder (lectures 1–13, 
 
 ---
 
+## TM Toolbox: common operations, implementation, and cost
+
+Conventions: `n` = input length, `t` = number of simulated steps, single tape unless stated. **Space** = tape cells visited (for the log-space rows: work-tape cells only). Time bounds are for the constructions actually shown in the course — cite these on the exam; "polynomial" is enough when the question only demands poly time.
+
+| Operation | How to do it | Time | Space |
+|---|---|---|---|
+| **Basic navigation & bookkeeping** | | | |
+| Scan to end of input (first ⌴) / return to start | Move right (left) in a single state until reading ⌴ (or a start marker) | O(n) | O(n) — no extra cells |
+| Mark the end of input with `#`, return to start | Rec. 4 machine: right until ⌴, write `#`, left until ⌴, step right | O(n) | O(n)+1 cell |
+| Mark/unmark a letter | Enlarge the work alphabet: Γ = Σ ∪ (Σ×{•̲}) ∪ {⌴,#,…}; formally the pair (a,mark), written ȧ | O(1) per mark | none extra |
+| Erase the tape / a region | Sweep writing ⌴ until a delimiter | O(length) | none extra |
+| Remember a letter/state "in the finite control" | Multiply the state set: states (q,σ) for σ∈Γ — used by shift-right, copy, procedure calls | O(1) | none — this is why Γ,Q must stay **finite** |
+| **String manipulation** | | | |
+| Shift a word one cell right (x#y → x#⌴y) | Overwrite first letter of y with ⌴, remember it in the state; each step: write remembered letter, remember overwritten one, move R; stop at ⌴ | O(\|y\|) | +1 cell |
+| Copy a string (x → x#x) | Mark next unmarked letter ȧ, carry it in the state to the end, write it, return; repeat; finally unmark all | O(n²) | O(n) extra (the copy) |
+| Reverse a string (x → x^R) — exercise 4 Q1 | Repeatedly take the rightmost unmarked letter and append it after a separator (or write leftward into fresh cells); unmark and clean up | O(n²) | O(n) extra |
+| Compare two strings x#y for equality | Zigzag: mark next letter of x, remember it, find next unmarked letter of y, compare, mark; reject on mismatch or length mismatch | O(n²) | none extra |
+| Substring test (is x a substring of y?) — rec. 4 | Alphabet of **stacked pairs** (σ over τ): write x above y cell-by-cell, compare in place; on mismatch shift x one cell right (shift-right procedure) and re-compare; reject when x slides past y | O(\|x\|·\|y\|) | O(n) — pairs live in the same cells |
+| Palindrome check | Compare first vs last unmarked letters, mark both, repeat inward | Θ(n²) on 1 tape (course states the lower bound is real); O(n) with 2 tapes | O(n) |
+| **Arithmetic (binary unless stated)** | | | |
+| Increment a binary counter (+1) | From rightmost bit: flip 1→0 moving left until a 0→1 (or extend with leading 1) | O(len) worst case per increment | counter length |
+| Decrement (−1), test for zero | Mirror of increment; zero-test = scan for any 1 | O(len) | counter length |
+| Successor/predecessor of the whole input (lecture 4 warm-up) | Same flipping walk over the input itself | 2n+O(1) | O(n) |
+| Compute input length \|w\| in binary | Keep a counter left of the input; per input letter: increment (O(log n)) and (in the course's version) shift it along (O(log n)) | O(n log n) — and this is optimal (stated w/o proof) | O(n) |
+| Addition x#y → x+y | **Pitfall:** "repeatedly decrement y, increment x" is O(y)·O(n) = **exponential** in \|y\| (y can be ≈2ⁿ). Do schoolbook column addition instead: align bits by marking, add with carry held in the state | O(n²) (poly, as exercise 4 Q2 requires) | O(n) |
+| Multiplication x#y → x·y (lecture 4) | Shift-and-add: for each bit of y (marked scan), conditionally add the appropriately shifted x into an accumulator; doubling x = append 0 | polynomial (≈ n additions × O(n²) = O(n³) naive) | O(n) — all numbers stay O(n) bits |
+| Unary→binary (aⁿ → binary of n) — naive (rec. 4) | For each unmarked a: mark it, walk to the counter after #, increment, walk back | O(n²) | O(n) |
+| Unary→binary — efficient (exercise 4 Q4, full credit) | Avoid the long walks: **keep the counter adjacent to the frontier** (shift it as you consume a's), or halve repeatedly (each pass writes one output bit = parity, then deletes every other a: log n passes × O(n)) | O(n log n) | O(n) |
+| **Language-decision patterns** | | | |
+| Simulate a DFA (proof REG⊆R, exercise 4 Q3) | States of M = states of A (+q_acc,q_rej); read L→R leaving letters unchanged; on ⌴ jump to q_acc iff current state ∈ F | O(n), always halts | O(n) — never writes |
+| aⁿbⁿ (rec. 4) | Put # at both ends; loop: delete leftmost symbol (must be a), delete rightmost (must be b); accept when empty, reject on wrong letter/imbalance | O(n²) | O(n) |
+| #a(w) = #b(w) (exercise 4 Q5) | Pair-off: repeatedly mark one unmarked a and one unmarked b, reject if only one kind remains | O(n²) naive; O(n log n) with a ±counter (single sweep: +1 on a, −1 on b, accept iff 0 — counter kept near the head) | O(n) |
+| **Simulation & control flow** | | | |
+| Procedure call ("call S from state q") | Replace the arrow into the procedure with states **(q,s)** for every s∈Q_S; mark the current head cell (ᾱ) before leaving; on (q,s_f) resume M's transitions reading marked letters | O(tape length) overhead per call (walk there and back) | +O(1) cells (markers) |
+| Step-counting wrapper M′(w)=M(w)#t (lecture 5, exercise 5 Q3) | Simulate one step of M, walk right to the counter, increment, walk back | naive O(t²) (counter far away); **O(t log t)** if the counter is carried next to the head (shift it O(log t) per step) | O(t) |
+| Universal TM U: one step ⟨M⟩⟨C⟩→⟨M⟩⟨C⁺⟩ (exercise 5 Q4) | Locate the state-symbol pair in ⟨C⟩, scan ⟨M⟩ for the matching δ-rule, rewrite ⟨C⟩ (may shift) | poly(\|⟨M⟩⟨C⟩\|) per step; per-step poly(\|⟨M⟩\|) only if ⟨M⟩ is **dragged along** near the head (fixed-width encodings); total simulation of t steps achievable in O(t log t) with optimizations | O(\|⟨M⟩\|+space of M) |
+| Bounded simulation ("run M on w for k steps") | Universal TM + a step countdown counter; answer q_rej on timeout | O(k·poly) — always halts (this is why ⟨M,w,k⟩∈R) | O(k+n) |
+| Run two machines "in parallel" (RE∪, R=RE∩coRE) | Two marked zones on one tape (or 2 tapes); alternate: for n=0,1,2,…, run M₁ then M₂ for n steps each (re-simulation) — or true lockstep on 2 tapes | dovetailed: O(Σ n·sim) until first accept; never needs both to halt | O(space of both + copies of w) |
+| Dovetailing over **all inputs** (NONEMPTY_TM, USELESS ∈ RE/coRE) | For n=0,1,2,…: for every \|w\|≤n, simulate M on w for n steps; accept when the event (accept / all states visited) occurs | unbounded — recognizer only, never a decider | unbounded |
+| 2-tape → 1-tape (rec. 8) | Cell alphabet (Γ×Γ×{0,1}×{0,1}) storing both tapes + head flags; per simulated step: scan for head 1, scan for head 2, apply δ, update both | t steps → **O(t²)** (heads ≤t apart) | O(t) cells |
+| k-tape → 1-tape | Same with (Γᵏ×{0,1}ᵏ) | O(f(n)) time machine → **O(f(n)²)** | O(f(n)) |
+| **Log-space primitives (3-tape model)** | | | |
+| Store a pointer/index into the input (vertex name, position) | Binary counter on the work tape | — | **O(log n)** each; O(1) many pointers allowed |
+| "Move" along the input without writing | Compare counter to position by walking the input head, decrementing a copy | poly per access | O(log n) |
+| Compose two log-space functions f∘g (lecture 12) | **Never write g(x)!** Recompute the needed letter of g(x) on demand: counters replace M_g's output head and M_f's input head; restart M_g each time | polynomial (very slow — that's fine) | O(log n) total |
+| Emit a graph/edge list in log space (reductions) | Loop counters over all pairs (u,v); test locally (e.g., "is v a successor config of u?"); print and forget | poly | O(log n) |
+
+**Exam heuristics from the course:** (1) after recitation 4 you may describe TMs at pseudocode level *built from these procedures* — but each step must be one you could implement; (2) always say whether your machine **halts on every input** (decider vs recognizer); (3) when asked for efficiency, the classic traps are the far-away counter (O(t²) vs O(t log t)) and unary/repeated-increment arithmetic (exponential vs schoolbook polynomial).
+
+---
+
 ## Files that couldn't be fully processed
 
 All **51 unique PDFs were read end-to-end** (one exact duplicate skipped: `Computability_2025_2026_b (1) (1).pdf` = byte-identical to `(1).pdf`). Partial-content caveats:
