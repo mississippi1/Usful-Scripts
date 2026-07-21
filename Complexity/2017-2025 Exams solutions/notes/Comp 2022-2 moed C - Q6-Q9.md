@@ -78,4 +78,4 @@ Since DISCONN-bar ∈ NL and NL = coNL, DISCONN ∈ NL.
 
 Track here which questions gave trouble, and how they were resolved. Updated as issues come up.
 
-*(none logged yet)*
+- **Q9**: Wanted a deeper explanation of why DISCONN ∈ NL, not just the summary proof. Resolved by walking through: (1) the meaning of "disconnected" for a directed graph (∃ ordered pair s,t with no path), (2) why DISCONN can't be attacked directly (the "no path exists" condition is universally-quantified, not naturally NL-guessable), (3) the complement algorithm in detail — deterministic outer loop over (e,s,t) triples + nondeterministic bounded-length path guess per triple, and *why* this "AND over guessed witnesses" composition stays in NL (space is reused between triples, so one accepting run can chain a witness for each triple), (4) exact space accounting (O(log|V|+log|E|) = O(log n)), and (5) why NL=coNL (Immerman–Szelepcsényi) is the necessary last step to go from "complement ∈ NL" to "language itself ∈ NL", and why NP-Complete/PSPACE-Complete would be far too strong given the direct logspace algorithm.
