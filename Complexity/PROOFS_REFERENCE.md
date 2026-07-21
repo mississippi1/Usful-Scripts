@@ -2,7 +2,28 @@
 
 Every proof appearing in the `Complexity` folder's files, **grouped by technique**, with stable IDs used identically in Part 1 (overview) and Part 2 (full detail).
 
-**Source key:** `[Sum wN]` = 82-page course summary, week N · `[RecN]` = English recitation N (תרגול; rec 3 & 7 are the `Computability_2025_2026_b*` files) · `[HRecN]` = Hebrew recitation N · `[LecN]` = lecture notes N (in `all-lectures.pdf`) · `[ExN]` = exercise sheet N.
+**Source key — abbreviation → exact file in `Complexity/`:**
+
+| Tag | Exact file |
+|---|---|
+| `Sum wN` (all weeks) | `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf` (the 82-page course summary; `wN` = week N inside it) |
+| `Rec1` | `תרגול 1.pdf` |
+| `Rec2` | `תרגול 2-מעודכן.pdf` |
+| `Rec3` | `Computability_2025_2026_b (1).pdf` (English Recitation 3) |
+| `Rec5` | `תרגול 5 - חישוביות.pdf` |
+| `Rec6` | `תרגול 6.pdf` |
+| `Rec7` | `Computability_2025_2026_b.pdf` (English Recitation 7) |
+| `Rec8` | `תרגול 8.pdf` |
+| `Rec9` | `תרגול 9 (2).pdf` |
+| `Rec10` | `תרגול 10.pdf` |
+| `Rec12` | `תרגול 12 (4).pdf` |
+| `HRec10` | `recitations/recitation 10.pdf` (Hebrew) |
+| `HRec11` | `recitations/recitation 11.pdf` (Hebrew — the TQBF proofs, no English twin exists) |
+| `Lec9` | `lessons/lesson 9.pdf` (content-identical to the corresponding pages of `lessons/all-lectures.pdf`) |
+| `Lec10` | `lessons/lesson 10.pdf` |
+| `Lec12` | `lessons/lesson 12.pdf` |
+| `Lec13` | `lessons/lesson 13.pdf` |
+| `Ex1` (hint only, not a proof) | `Computability_2025_2026_b (11).pdf` (Exercise 1) |
 
 **Grounding rule (enforced):** only arguments actually written in the files appear here. Where a file *states* a result but defers the proof to homework or the lecture, the entry is marked **⚠ INCOMPLETE IN SOURCES** and only what the file contains is given. Exercise sheets contain statements without solutions, so nothing is sourced *only* to an `[ExN]`.
 
@@ -15,6 +36,110 @@ Every proof appearing in the `Complexity` folder's files, **grouped by technique
 - **F** — Polynomial reductions, NP & Cook–Levin
 - **G** — Space complexity, hierarchy theorems, NL, PSPACE
 - **H** — Randomized classes (probabilistic arguments)
+
+---
+
+## Per-proof source index
+
+Every one of the 90 proofs below, with the **exact file(s)** it was read from — no abbreviations. Where two files are listed, the result is corroborated across both (e.g. an English recitation and the course summary covering the same session).
+
+<details>
+<summary><b>Click to expand — full ID → source-file table (90 rows)</b></summary>
+
+| ID | Proof | Source file(s) |
+|---|---|---|
+| **A1** | A specific DFA decides L = {w starts with a} — the template for all... | `תרגול 1.pdf` |
+| **A2** | δ*(q, w·w′) = δ*(δ*(q,w), w′) | `תרגול 1.pdf`; `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf` |
+| **A3** | REG closed under ∪ and ∩ (product automaton) | `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf` |
+| **A4** | NREG closed under union | `תרגול 2-מעודכן.pdf`; `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf` |
+| **A5** | NREG closed under concatenation | `תרגול 2-מעודכן.pdf`; `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf` |
+| **A6** | The two definitions of δ* for NFAs agree | `תרגול 2-מעודכן.pdf` |
+| **A7** | NREG = REG (determinization / subset construction) | `Computability_2025_2026_b (1).pdf`; `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf` |
+| **A8** | L_EVEN = {w∈L : \|w\| even} is regular | `תרגול 1.pdf` |
+| **A9** | L_mix ∈ NREG for regular L | `תרגול 2-מעודכן.pdf`; `Computability_2025_2026_b (1).pdf` |
+| **B1** | Words reaching the same DFA state have no separating suffix | `Computability_2025_2026_b (1).pdf` |
+| **B2** | ∼_L is an equivalence relation | `Computability_2025_2026_b (1).pdf` |
+| **B3** | Myhill–Nerode theorem: finitely many classes ⟺ regular; #classes =... | `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf`; `Computability_2025_2026_b (1).pdf` |
+| **B4** | Any DFA for L_k (kth letter from the end is a) has ≥2^k states | `תרגול 2-מעודכן.pdf`; `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf` |
+| **B5** | {w : #a(w) ≥ #b(w)} not regular | `Computability_2025_2026_b (1).pdf` |
+| **B6** | {1^{n²}} not regular | `Computability_2025_2026_b (1).pdf` |
+| **B7** | {1^p : p prime} not regular | `Computability_2025_2026_b (1).pdf` |
+| **B8** | {aⁿbⁿ} not regular | `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf` |
+| **C1** | {⟨M,w,k⟩ : M accepts w within k steps} ∈ R | `תרגול 5 - חישוביות.pdf` |
+| **C2** | NON-EMPTY_TM ∈ RE (dovetailing) | `תרגול 5 - חישוביות.pdf` |
+| **C3** | R closed under complement, ∪, ∩ | `תרגול 5 - חישוביות.pdf` |
+| **C4** | RE closed under ∩ and ∪ | `תרגול 5 - חישוביות.pdf` |
+| **C5** | R = RE ∩ coRE | `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf` |
+| **C6** | HALT ∈ RE | `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf` |
+| **C7** | A universal TM exists — **proof-idea level in source** | `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf` |
+| **C8** | Every 2-tape (k-tape) TM has an equivalent 1-tape TM; time O(t)→O(t... | `תרגול 8.pdf` |
+| **C9** | USELESS ∈ coRE | `תרגול 6.pdf` |
+| **D0** | Undecidable decision problems exist (counting) | `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf`; `Computability_2025_2026_b (11).pdf` |
+| **D1** | HALT ∉ R | `תרגול 5 - חישוביות.pdf`; `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf` |
+| **D2** | DECIDABLE (provable-or-refutable claims) ∉ R | `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf` |
+| **D3** | BB(n) is not computable | `תרגול 6.pdf` |
+| **D4** | Time Hierarchy Theorem: TIME(o(f)) ⊊ TIME(f·log f), f time-construc... | `lessons/lesson 10.pdf`; `תרגול 12 (4).pdf` |
+| **D5** | Space Hierarchy Theorem: SPACE(o(f)) ⊊ SPACE(f), f space-constructible | `lessons/lesson 10.pdf` |
+| **E1** | L_even-length ≤m L_odd-length, two ways | `תרגול 5 - חישוביות.pdf` |
+| **E2** | HALT ≤m NON-EMPTY_TM | `תרגול 5 - חישוביות.pdf` |
+| **E3** | Reduction theorem: A≤mB ∧ B∈{R,RE,coRE} ⇒ A∈ same | `תרגול 5 - חישוביות.pdf`; `תרגול 6.pdf` |
+| **E4** | HALT ≤m A_TM and A_TM ≤m HALT | `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf` |
+| **E5** | A_TM is RE-complete | `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf` |
+| **E6** | HALT-bar is coRE-complete | `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf` |
+| **E7** | Non-HALT is coRE-complete | `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf` |
+| **E8** | ALL_TM ∉ RE ∪ coRE | `תרגול 6.pdf` |
+| **E9** | REG_TM ∉ coRE (∉ RE was Ex6 Q2 | `תרגול 6.pdf` |
+| **E10** | RE-hard ⇒ ∉coRE; L RE-complete ⟺ L̄ coRE-complete; hardness spreads... | `תרגול 6.pdf` |
+| **E11** | USELESS is coRE-hard (with C9: coRE-complete) | `תרגול 6.pdf` |
+| **E12** | NY-HALT is RE-hard and coRE-hard, hence ∉ RE ∪ coRE | `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf` |
+| **F1** | ≤p composes (transitivity) | `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf` |
+| **F2** | Reduction theorem for P: A≤pB, B∈P ⇒ A∈P | `Computability_2025_2026_b.pdf` |
+| **F3** | P closed under ∪ and complement | `Computability_2025_2026_b.pdf` |
+| **F4** | NP closed under ∪ | `Computability_2025_2026_b.pdf` |
+| **F5** | CLIQUE ∈ NP and CLIQUE ∈ EXP | `Computability_2025_2026_b.pdf`; `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf` |
+| **F6** | 3-SAT ∈ NP | `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf` |
+| **F7** | 3-SAT ≤p CLIQUE | `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf` |
+| **F8** | CLIQUE ≤p IS | `Computability_2025_2026_b.pdf` |
+| **F9** | IS ≤p VC | `תרגול 8.pdf` |
+| **F10** | k-SAT ≤p 3-SAT (k>3) | `תרגול 8.pdf` |
+| **F11** | 3-SAT ≤p D-ST-HAMPATH | `תרגול 8.pdf` |
+| **F12** | U-ST-HAMPATH is NP-complete | `תרגול 9 (2).pdf` |
+| **F13** | 3-COLORING is NP-complete | `תרגול 9 (2).pdf` |
+| **F14** | 2-SAT ∈ P | `תרגול 9 (2).pdf` |
+| **F15** | SUBSET-SUM is NP-complete | `lessons/lesson 9.pdf`; `recitations/recitation 10.pdf` |
+| **F16** | SUBSET-SUM ≤p KNAPSACK (KNAPSACK NPC with its verifier) | `תרגול 10.pdf` |
+| **F17** | If L is NPC then AtLeastTwo(L) is NPC (2024-A exam) | `תרגול 10.pdf` |
+| **F18** | NP = NP′ (verifier characterization) | `תרגול 9 (2).pdf`; `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf` |
+| **F19** | Cook–Levin: SAT (hence 3-SAT) is NP-complete | `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf`; `lessons/lesson 9.pdf` |
+| **F20** | coNP hardness mirrors; NP-hard ∩ NP∩coNP ⇒ NP=coNP | `תרגול 10.pdf` |
+| **F21** | CNF-TAUTOLOGY ∈ P | `תרגול 10.pdf` |
+| **F22** | Search-to-decision: a poly decider for SAT yields a poly *assignmen... | `lessons/lesson 12.pdf` |
+| **G1** | Savitch: NSPACE(f) ⊆ SPACE(f²), f space-constructible | `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf`; `lessons/lesson 10.pdf` |
+| **G2** | PSPACE = NPSPACE | `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf` |
+| **G3** | L ⊆ P; log-space machines have poly-length output | `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf` |
+| **G4** | Log-space functions compose (f∘g computable in O(log n) space) | `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf`; `lessons/lesson 12.pdf` |
+| **G5** | P ⊊ EXP; TIME(n²) ⊊ TIME(n³) | `lessons/lesson 10.pdf`; `תרגול 12 (4).pdf` |
+| **G6** | No k with ⋃_{i≤k}TIME(nⁱ) = P | `תרגול 12 (4).pdf` |
+| **G7** | Padding: SPACE(n)⊆P ⟺ PSPACE=P; corollary SPACE(nᵏ)≠P ∀k | `תרגול 12 (4).pdf` |
+| **G8** | PATH is NL-complete | `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf` |
+| **G9** | ≤L composes; NL-hardness spreads (B NL-hard ∧ B≤LC ⇒ C NL-hard) | `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf` |
+| **G10** | NL=coNL ⟺ PATH-bar ∈ NL | `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf` |
+| **G11** | Immerman–Szelepcsényi: PATH-bar ∈ NL (hence NL=coNL) | `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf`; `lessons/lesson 12.pdf` |
+| **G12** | NPSPACE = coNPSPACE | `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf` |
+| **G13** | STRONGLY-CONNECTED is NL-complete | `תרגול 12 (4).pdf`; `lessons/lesson 12.pdf` |
+| **G14** | E_NFA (NFA emptiness) is NL-complete | `תרגול 12 (4).pdf` |
+| **G15** | 10-CSS (exactly 10 SCCs) is NL-complete; 2-Con, AL2SCC ∈ NL | `תרגול 12 (4).pdf`; `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf`; `lessons/lesson 12.pdf` |
+| **G16** | TQBF ∈ PSPACE | `recitations/recitation 11.pdf` |
+| **G17** | TQBF is PSPACE-hard (with G16: PSPACE-complete) | `recitations/recitation 11.pdf` |
+| **H1** | P ⊆ ZPP, P ⊆ RP, P ⊆ BPP | `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf` |
+| **H2** | RP ⊆ NP | `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf` |
+| **H3** | RP(p) = RP for any constant p (one-sided amplification) | `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf` |
+| **H4** | BPP(ε) = BPP (two-sided amplification) | `lessons/lesson 13.pdf` |
+| **H5** | BPP = coBPP; RP, coRP ⊆ BPP | `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf` |
+| **H6** | BPP ⊆ EXP | `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf` |
+| **H7** | ZPP = RP ∩ coRP | `מודלים חישוביים, חישוביות וסיבוכיות - סיכום קורס 2025 סמסטר ב.pdf`; `lessons/lesson 13.pdf` |
+
+</details>
 
 ---
 
