@@ -1,4 +1,4 @@
-# Comp 2022-2, Moed A — Question 7 (study notes)
+# Comp 2022-2, Moed A — Questions 7-8 (study notes)
 
 Source exam: `Complexity/2017-2025 Exams/comp 2022-2 moed A.pdf`
 Official solution: `Complexity/2017-2025 Exams solutions/Comp 2022-2 moed A solution.pdf`
@@ -69,6 +69,52 @@ NL = coNL. A direct "positive" PATH ≤ₗ LP gadget with a small k cannot work.
 k = |V|+2. With the more common edge-count distance the same reduction uses k = |V|+1, or
 simply k = |V| with the unreachable case giving distance ∞.)
 
+## Q8 (12 pts)
+
+Define the language
+LargeCycle = { (G,x) | G is an **undirected** graph, with a **simple cycle** that contains
+at least |V(G)|/2 distinct vertices including x }.
+
+Which complexity class does LargeCycle belong to? (circle: NL-Complete / NP-Complete / PSPACE-Complete)
+
+**Answer: NP-Complete.** (NOT NL-complete — see the trap below.)
+
+### The trap: why this is NOT NL
+
+The tempting wrong answer is NL, via "guess the cycle and verify in log space." That fails on
+the one check that matters: the cycle must be **simple** (all vertices distinct). The certificate
+here is a cycle of ≥ |V|/2 vertices — a **linear-size** object — and certifying that its vertices
+are all distinct needs to remember the set of vertices already seen: Θ(|V|) bits, not O(log n).
+The NL verifier characterization gives a **read-once** certificate tape plus an O(log n) work
+tape, so you can neither store the seen-set nor re-scan to catch repeats.
+
+This is the exact NL/NP boundary:
+- `PATH` ∈ NL because reachability needs only a **walk** — you guess vertex-by-vertex keeping just
+  the current vertex + a counter ≤ |V|, and you never certify simplicity (if a walk exists a simple
+  path exists).
+- "simple cycle/path covering many **distinct** vertices" (Hamiltonian family: HamCycle,
+  LongestPath, LargeCycle) forces certifying no repeats → out of log space → NP.
+
+Also note: a reduction **from** PATH (`PATH ≤ₗ LargeCycle`) would only prove NL-**hardness** (a lower
+bound), which every NP-complete problem already satisfies — it says nothing about NL-**membership**.
+So even a correct PATH reduction argues for the wrong thing. (In fact LargeCycle ∉ NL unless P = NP,
+since it is NP-hard and NL ⊆ P.)
+
+### Membership: LargeCycle ∈ NP
+
+Witness = the cycle. Verify in poly **time** (poly work space, which is what lets you check
+distinctness): it is a simple cycle, has ≥ |V|/2 vertices, and includes x.
+
+### Hardness: NP-hard via HamCycle ≤p LargeCycle (official)
+
+Given G = (V,E), build G' by duplicating each vertex with an **isolated twin**:
+  V' = V ∪ { v' : v ∈ V }   (so |V'| = 2|V|, hence |V'|/2 = |V|),
+  E' = E   (the twins v' get no edges),   and pick any x ∈ V.
+Since every edge of G' lies inside the original V, any simple cycle with ≥ |V'|/2 = |V| distinct
+vertices must use **all** of V — i.e. a Hamiltonian cycle of G (which automatically passes through x).
+So G ∈ HamCycle ⟺ (G',x) ∈ LargeCycle; the reduction adds |V| vertices in poly time. Hence NP-hard,
+and with membership, **NP-Complete**.
+
 ---
 
 ## Issues log
@@ -84,3 +130,15 @@ Track here which parts gave trouble, and how they were resolved.
   the official solution — despite its "PATH ≤ₗ LP" label — in fact maps non-reachable
   instances to LP-membership. Also clarified the solution's length-in-vertices convention
   (k = |V|+2 vs the edge-count k = |V|+1).
+
+- **Q8 (misclassified as NL):** Thought LargeCycle was NL-complete, reasoning "a log-space verifier
+  can guess the cycle and check ≥ |V|/2 vertices + edges + closure," plus a reduction from PATH.
+  Resolved: correct answer is **NP-Complete**. The verifier argument fails because it omits the
+  **simplicity/distinctness** check — certifying that ≥ |V|/2 guessed vertices are all distinct needs
+  Θ(|V|) memory (a read-once certificate + O(log n) work tape can't store the seen-set or re-scan),
+  which is exactly the NL→NP boundary (contrast PATH, where a mere walk suffices and simplicity is
+  never certified). Separately, a reduction *from* PATH only gives NL-hardness (a lower bound every
+  NP-complete problem meets) and never NL-membership. Correct proof: in NP (witness = cycle, checked
+  in poly time), NP-hard via HamCycle ≤p LargeCycle using the isolated-twin vertex-doubling gadget so
+  that |V'|/2 = |V| forces the large cycle to be Hamiltonian. General rule captured: "simple
+  path/cycle over many distinct vertices" ⇒ Hamiltonian-family ⇒ NP, not NL.
