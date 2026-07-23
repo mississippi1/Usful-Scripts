@@ -1,7 +1,6 @@
-# Comp 2021 moed B — Q2 (colored DFA / k-צבעוני)
+# Comp 2025-1 moed A — Q2 (colored DFA / k-צבעוני)
 
-*(From the unified study booklet; the question is labeled "שאלה 2". Same DFA-topic
-cluster as the Part-I DFA question.)*
+*(Source: `Complexity/2017-2025 Exams/Comp 2025-1 moed A.pdf`, labeled "שאלה 2".)*
 
 ## Definitions
 
@@ -48,8 +47,9 @@ Corollary: k-colored DFAs recognize exactly the regular languages.
 
 ## Issues log
 
-- **Q2.א** — How to design a *3-colored* minimal-state DFA and, generally, convert colored
-  DFAs to ordinary ones. Resolved: 3 states colored 1/2/3 with every state sending a→q_a,
-  b→q_b; run collects all 3 colors iff both letters appear. Minimality: <3 states can't hold
-  3 colors. General transform: augment each state with the subset of colors seen so far
-  (Q×P([k])), accept when the subset = [k]; blowup |Q|·2^k.
+- **Q2.א** — Solved incorrectly on first attempt. Difficulty: designing a *3-colored*
+  minimal-state DFA and, generally, converting colored DFAs to ordinary ones. Resolved:
+  3 states colored 1/2/3 with every state sending a→q_a, b→q_b; run collects all 3 colors
+  iff both letters appear. Minimality: <3 states can't hold 3 colors. General transform:
+  augment each state with the subset of colors seen so far (Q×P([k])), accept when the
+  subset = [k]; blowup |Q|·2^k.
