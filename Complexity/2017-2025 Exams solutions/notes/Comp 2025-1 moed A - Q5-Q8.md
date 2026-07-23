@@ -108,6 +108,22 @@ So the whole question turns on the **reduction's resource bound**: under ≤_L t
 "false"; under ≤p a poly-time reduction can absorb the NL/P computation and the only barrier left is the
 open P vs PSPACE question.
 
+**"But doesn't reducing to the low-space PATH *solve* the space bound?" — No; nothing bypasses the
+hierarchy.** The mechanism is how far membership travels across a reduction:
+
+> If A ≤ᵣ B and B ∈ 𝒞, then A ∈ 𝒞 **only when 𝒞 is closed under ≤ᵣ**.
+
+P is closed under ≤p; **NL is not**. So from ALL_NFA ≤p PATH and PATH ∈ NL ⊆ P you may only infer
+ALL_NFA ∈ **P** — *not* ALL_NFA ∈ NL. PATH's low space does **not** propagate backward across a
+poly-*time* reduction. Trace the actual cost: to decide ALL_NFA you (1) run f to *build* the PATH
+instance ⟨G,s,t⟩, then (2) solve PATH. Step 2 is cheap *in |G|*, but step 1 runs in poly time and may
+**write a poly-size G using poly work space** — you cannot ignore that cost. Composed, the procedure is
+poly time **and poly space**. So it certifies ALL_NFA ∈ P (a poly-*space* class it already lived in — no
+contradiction), adding only a *time* bound; no PSPACE computation is ever crammed into logspace. That is
+why the consequence is P = PSPACE (time = space), never NL = PSPACE. Under **≤_L**, by contrast, NL *is*
+closed, so PATH's cheapness *does* travel all the way down (ALL_NFA ∈ NL ⇒ NL = PSPACE), which is exactly
+the contradiction that makes the logspace version provably false.
+
 ### Q8.ג (9 pts) — claim: K ∈ LOGSPACE
 
 K = { ⟨A₁, A₂⟩ : A₁, A₂ are DFAs and there is a word in L(A₁)·L(A₂) } (· = concatenation).
@@ -163,6 +179,15 @@ inside L, and an NL-complete problem sitting in L is exactly the statement L = N
   *provably false* (it would give ALL_NFA ∈ NL, contradicting NL ⊊ PSPACE), whereas ALL_NFA ≤p PATH is
   *unknown*. The trap is the reduction's resource bound — ≤_L forces "false", ≤p leaves it open at P vs
   PSPACE.
+
+- **Q8.א (follow-up 2)** — "How does the poly reduction *solve* the space constraint?" It doesn't — the
+  confusion is expecting PATH's low space to transfer back to ALL_NFA. Resolved: membership transfers
+  across A ≤ᵣ B only when the target class is **closed under ≤ᵣ**. P is closed under ≤p, **NL is not**,
+  so ALL_NFA ≤p PATH yields only ALL_NFA ∈ **P**, never ALL_NFA ∈ NL. Building the PATH instance already
+  costs poly time and poly space, so the composed decider is poly-space (a class ALL_NFA was always in —
+  no contradiction) plus a new poly-*time* bound ⇒ P = PSPACE, not NL = PSPACE. The Space Hierarchy
+  (NL ⊊ PSPACE) is never touched. Only under ≤_L (NL *is* closed) does PATH's cheapness reach NL and
+  trigger the contradiction — which is why the logspace version is provably false.
 
 - **Q8.ג** — Got the **L vs NL containment backwards**: I thought "LOGSPACE contains NL." The correct
   direction is **L ⊆ NL** (deterministic logspace ⊆ nondeterministic logspace), with equality open.
