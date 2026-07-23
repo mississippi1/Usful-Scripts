@@ -70,24 +70,43 @@ words" is exactly the shape that dovetailing recognizes, which pulls the languag
 ALL_NFA = { ⟨A⟩ : A is an NFA and L(A) = Σ* } is **PSPACE-complete** (NFA universality).
 PATH (directed s–t reachability, STCON) is **NL-complete**, in particular PATH ∈ P.
 
-**Answer: נכונותה לא ידועה (truth unknown) — and it would imply P = PSPACE.**
+**Answer: נכונותה לא ידועה (truth unknown) — the claim is *equivalent* to P = PSPACE.**
 
-A ≤p (polynomial-time many-one) reduction from ALL_NFA to PATH puts **ALL_NFA ∈ P**: decide ⟨A⟩ by
-computing the reduction in poly time, then solving PATH in poly time (PATH ∈ NL ⊆ P; P is closed under
-≤p). But ALL_NFA is PSPACE-complete, so every L ∈ PSPACE satisfies L ≤p ALL_NFA ∈ P, giving PSPACE ⊆ P,
-i.e. **P = PSPACE**. This is an open problem — neither known true nor known false — so the truth of the
-claim is **unknown**.
+The claim is not merely *sufficient* for a collapse; it is **logically equivalent** to P = PSPACE:
 
-Because P = PSPACE cascades (P ⊆ NP ⊆ PSPACE = P), the claim would in fact collapse
-**P = PSPACE ⇒ P = NP ⇒ NP = coNP ⇒ NP = PSPACE** as well. It does **not** imply L = NL, and it does
-**not** imply P ≠ NP (it forces the opposite).
+> **ALL_NFA ≤p PATH ⟺ ALL_NFA ∈ P ⟺ P = PSPACE.**
 
-**Why the Space-Hierarchy "impossibility" argument is wrong** (see Issues log): the Space Hierarchy
-Theorem separates *space* classes — e.g. NL ⊊ PSPACE — but it says nothing about whether a
-**poly-*time*** many-one reduction can exist between two problems. A ≤p reduction is a time-bounded map,
-not a logspace one; its existence would collapse P and PSPACE (open), and no hierarchy theorem forbids
-that. "ALL_NFA needs poly space, PATH lives in logspace, so the reduction is impossible" conflates the
-reduction's *time* budget with the *space* complexity of the two problems.
+**(⇒) claim ⇒ P = PSPACE.** A ≤p reduction to PATH puts **ALL_NFA ∈ P**: decide ⟨A⟩ by computing f(⟨A⟩)
+in poly time, then solving PATH in poly time (PATH ∈ NL ⊆ P; P closed under ≤p). ALL_NFA is
+PSPACE-complete, so every L ∈ PSPACE has L ≤p ALL_NFA ∈ P ⇒ L ∈ P ⇒ PSPACE ⊆ P, i.e. **P = PSPACE**.
+
+**(⇐) P = PSPACE ⇒ claim.** Then ALL_NFA ∈ PSPACE = P. Key fact about **poly-time** reductions: to reduce
+*any* B ∈ P to PATH, let f(x) = "decide x ∈ B in poly time, then output a fixed **yes**-instance of PATH
+if yes, a fixed **no**-instance if no." That is poly-time and correct, so B ≤p PATH. With B = ALL_NFA,
+the claim holds. (General phenomenon: ≤p is strong enough to *solve* the source and emit a canned
+answer, so `A ≤p (any nontrivial P-language)` just means `A ∈ P` — PATH only needs one yes- and one
+no-instance, which it has.)
+
+P = PSPACE is open (believed false, unproven), so the claim's truth is **unknown**. It cascades
+(P ⊆ NP ⊆ PSPACE = P): the claim entails **P = PSPACE ⇒ P = NP ⇒ NP = coNP ⇒ NP = PSPACE**. It does
+**not** entail L = NL, and it is inconsistent with **P ≠ NP**.
+
+**Why the Space-Hierarchy "impossibility" argument is wrong — and where it is right.** The tempting wrong
+proof: "PATH is NL-ish, ALL_NFA needs poly space, and NL ⊊ PSPACE by the Space Hierarchy Theorem, so the
+reduction is impossible ⇒ false." The flaw: **a ≤p reduction is time-bounded, not space-bounded** — it may
+use poly space and need not respect either problem's space complexity. The Space Hierarchy Theorem
+separates *space* classes (giving NL ⊊ PSPACE unconditionally) but says nothing about whether a
+poly-*time* map between two problems exists; that is a time-vs-space question (P vs PSPACE), left open.
+The instinct **is correct for the logspace version of the claim**:
+
+| Claim | Truth | Why |
+|---|---|---|
+| **ALL_NFA ≤_L PATH** (logspace reduction) | **provably FALSE** | ≤_L to PATH ⇒ ALL_NFA ∈ NL; but ALL_NFA is PSPACE-complete and NL ⊊ PSPACE (Space Hierarchy) — contradiction. |
+| **ALL_NFA ≤p PATH** (poly-time reduction) | **unknown** | ⟺ ALL_NFA ∈ P ⟺ P = PSPACE (open). |
+
+So the whole question turns on the **reduction's resource bound**: under ≤_L the space separation forces
+"false"; under ≤p a poly-time reduction can absorb the NL/P computation and the only barrier left is the
+open P vs PSPACE question.
 
 ### Q8.ג (9 pts) — claim: K ∈ LOGSPACE
 
@@ -135,6 +154,15 @@ inside L, and an NL-complete problem sitting in L is exactly the statement L = N
   The Space Hierarchy Theorem separates *space* classes (NL ⊊ PSPACE) and never rules out a poly-time
   map between problems; conflating the reduction's time budget with the problems' space complexity was
   the error.
+
+- **Q8.א (follow-up)** — Asked for a deeper walkthrough. Two clarifications added to the Q8.א section:
+  (1) the claim is not just *sufficient* for a collapse — it is **equivalent** to P = PSPACE
+  (ALL_NFA ≤p PATH ⟺ ALL_NFA ∈ P ⟺ P = PSPACE), because a poly-time reduction can internally decide
+  any P-language and map to a fixed yes/no PATH instance, so `A ≤p (nontrivial P-language)` ⟺ `A ∈ P`;
+  (2) the space-hierarchy instinct is actually **correct for the logspace version**: ALL_NFA ≤_L PATH is
+  *provably false* (it would give ALL_NFA ∈ NL, contradicting NL ⊊ PSPACE), whereas ALL_NFA ≤p PATH is
+  *unknown*. The trap is the reduction's resource bound — ≤_L forces "false", ≤p leaves it open at P vs
+  PSPACE.
 
 - **Q8.ג** — Got the **L vs NL containment backwards**: I thought "LOGSPACE contains NL." The correct
   direction is **L ⊆ NL** (deterministic logspace ⊆ nondeterministic logspace), with equality open.
