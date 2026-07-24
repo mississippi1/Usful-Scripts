@@ -51,3 +51,19 @@ Track here which parts gave trouble, and how they were resolved.
   since computing α(G) is itself NP-hard — a flat k isolated vertices is the right, α-oblivious
   choice. Classification: **NP-complete** (∈NP via a cover+independent-set certificate; NP-hard via
   this VC reduction).
+
+- **Q8 (why is k given in unary?):** The reduction *builds* k new vertices, so its output has size
+  Θ(n + k). A poly-time reduction must output size poly in the **input length**, and the encoding of
+  k decides how large k can be relative to that length:
+  - *Unary:* writing k costs k symbols ⇒ |input| ≥ k ⇒ output is linear in input ⇒ reduction is
+    polynomial.
+  - *Binary:* writing k costs ⌈log₂k⌉ bits ⇒ from an input of length s, k can be ≈ 2ˢ ⇒ "add k
+    vertices" is exponential and cannot even be written in poly time.
+  Same phenomenon as SUBSET-SUM/KNAPSACK being *pseudo-polynomial*: polynomial in a number's *value*
+  = polynomial in input length **only** under unary. Two caveats for honesty: (a) unary is **not**
+  needed for L ∈ NP (the cover+IS certificate works in any encoding) — it only makes the *hardness
+  construction* polynomial; (b) for a reduction *from VC* one may assume WLOG k ≤ n (k ≥ n ⇒ trivial
+  yes), so even a binary-k variant of L is still NP-complete via a slightly more careful reduction —
+  unary is what lets you write the clean one-liner "add k isolated vertices" with **no** k > n
+  special-casing, and is genuinely indispensable only when the numeric parameter isn't a-priori
+  bounded by the graph size.
