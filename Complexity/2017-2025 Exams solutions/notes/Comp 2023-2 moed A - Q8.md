@@ -55,3 +55,19 @@ Track here which parts gave trouble, and how they were resolved.
   precisely those where **t IS reachable**, and knowing a path exists says nothing about whether a
   *long simple* one does. Key takeaway: "simple" + "≥ k" (a lower bound) is what forces NP-hardness;
   dropping simplicity (walks) or flipping to "≤ k" (short path) would land it in P.
+
+- **Q8 (follow-up — "but G8 says PATH ∈ NL ⊆ P"):** True, but G8's PATH is a *different language*.
+  This is a **language-identity** error, not a complexity-class error. In `PROOFS_REFERENCE.md`:
+  - **G8 (PATH is NL-complete)** = reachability, {⟨G,s,t⟩ : some walk s⇝t exists}. Its NL machine
+    stores *only the current vertex + a step counter* — which is exactly why it works: it never
+    enforces simplicity (if any walk exists a simple one does too, so simplicity is free) and has no
+    "≥ k" bound. That machine **cannot** decide L: (1) enforcing "no repeated vertex" needs to
+    remember all visited vertices = linear space, not O(log n); (2) without simplicity, "length ≥ k"
+    is trivial to satisfy by looping a cycle — the lower bound only bites *because* the path must be
+    simple.
+  - **F12 (U-ST-HAMPATH is NP-complete)** sits right next to G8 and is the correct analogue: its
+    verifier checks the vertex sequence is "all distinct (and all of V present)" — a *simple* path of
+    length n−1. That is a special case of L (k = n−1), which is why L inherits F12's NP-hardness.
+  So L belongs to the **F12 (Hamiltonian) family**, not the **G8 (reachability) family**. PATH ∈ NL,
+  and PATH-bar ∈ NL too (G10/G11, NL = coNL) — both correct, both irrelevant to the *long simple
+  path* problem L.
