@@ -71,3 +71,22 @@ Track here which parts gave trouble, and how they were resolved.
   So L belongs to the **F12 (Hamiltonian) family**, not the **G8 (reachability) family**. PATH ∈ NL,
   and PATH-bar ∈ NL too (G10/G11, NL = coNL) — both correct, both irrelevant to the *long simple
   path* problem L.
+
+- **Q8 (follow-up — "complement L via BFS, since non-simple paths reduce to simple"):** The class
+  bookkeeping is fine (P is closed under complement, so L ∈ P ⟺ Lᶜ ∈ P), but the proposed decider
+  does not decide Lᶜ. Three points:
+  - *"Infinity paths" is a non-issue.* In a finite graph a simple path has length ≤ n−1, so length is
+    already capped — there is nothing infinite to exclude. The problem is finite as stated and still
+    NP-complete. (Only *walks* could be unbounded via cycles; the problem says *simple*.)
+  - *BFS decides the wrong thing.* Lᶜ = {no simple s→t path of length ≥ k} = {the **longest** simple
+    s→t path has length < k, or none}. Certifying it requires the **longest** simple path — but BFS
+    computes the **shortest** path, which says nothing about the longest. Counterexample: edges s→t,
+    s→a, a→b, b→t; k = 3. Simple paths are [s,t] (len 1) and [s,a,b,t] (len 3), so (G,s,t,3) ∈ L —
+    yet BFS reaches t at distance 1 < 3 and would wrongly declare the complement. A short path and a
+    long path coexist; BFS finds the short one and is blind to the long one.
+  - *Cycle-splicing goes the wrong direction.* "Reduce a non-simple walk to a simple path" is real,
+    but it only ever **shortens** (splice out cycles). That serves reachability and upper bounds
+    (≤ k); it is useless for a lower bound (≥ k), where you need a *long* simple path. Extending a
+    path while keeping it simple is exactly the Hamiltonian difficulty.
+  - Net: L is NP-complete ⇒ Lᶜ is coNP-complete; a real BFS decider for Lᶜ would give P = NP. BFS
+    decides reachability (shortest / existence), not "longest simple path < k".
