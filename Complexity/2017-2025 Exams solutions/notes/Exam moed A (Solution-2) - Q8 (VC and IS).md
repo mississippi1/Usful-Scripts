@@ -67,3 +67,20 @@ Track here which parts gave trouble, and how they were resolved.
   unary is what lets you write the clean one-liner "add k isolated vertices" with **no** k > n
   special-casing, and is genuinely indispensable only when the numeric parameter isn't a-priori
   bounded by the graph size.
+
+- **Q8 (are "k ≤ |V|" and "k in unary" interchangeable?):** Yes — for securing **polynomial running
+  time** they are two *independent sufficient* conditions to bound the output size Θ(n + k), and you
+  need at most one:
+  - unary ⇒ |input| ≥ k ⇒ output poly in input, for **all** k;
+  - k ≤ n ⇒ output ≤ 2n ⇒ poly in n, in **any** encoding.
+  So unary ⇒ no need to bound k; bounded k ⇒ no need for unary. Three refinements: (1) **neither is
+  needed for correctness** — the add-k-vertices reduction is correct for every k ≥ 1 regardless;
+  these only concern output size / running time. (2) They are **not symmetric in effort**: unary is
+  a free property of the encoding the problem hands you (covers all k, no case analysis), whereas
+  "k ≤ |V|" is not a "check-and-reject" — a many-one reduction must map every instance, so it is
+  really a **case-split** (k > n ⇒ output a fixed trivial yes-instance since ⟨G,k⟩ ∈ VC automatically
+  when k ≥ n; k ≤ n ⇒ run the construction). (3) In **this** problem k is already given in unary, so
+  the sufficient condition is free and a k ≤ |V| check would be redundant; the k ≤ |V| route is the
+  alternative you'd use if the parameter were given in binary. One-liner to internalize: *a reduction
+  that builds k gadgets is polynomial iff k is bounded by the input length, secured either by the
+  encoding (unary) or by bounding the value (k ≤ n) — either suffices, never both.*
