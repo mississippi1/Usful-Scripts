@@ -49,3 +49,19 @@ Track here which parts gave trouble, and how they were resolved.
   is to reduce A_TM / HALT to UC-bar (build M' whose language fails upward-closure iff M accepts w).
   Also distinguished from the string-level dual: the complement of a generic upward-closed *string*
   language is *prefix-closed* (z∉L ⟹ all prefixes of z ∉ L) — not the object needed here.
+
+- **Q6 (how to take the complement correctly — negating a quantified statement):** Taking the
+  complement of a property-defined language = **negating the property**; it's pure logic. Recipe:
+  1. Write the property fully quantified: "L closed-from-above" ≡ ∀x ∀y ( x∈L → x∘y∈L ). Identify the
+     connective — here an **implication**.
+  2. Push ¬ inward with the toolbox: ¬∀u φ = ∃u ¬φ; ¬∃u φ = ∀u ¬φ; **¬(A→B) = A ∧ ¬B**;
+     ¬(A∧B) = ¬A ∨ ¬B; ¬(A∨B) = ¬A ∧ ¬B; ¬(x∈L) = x∉L.
+  3. Crank left→right:
+     ¬[∀x∀y(x∈L→x∘y∈L)] = ∃x¬[∀y(...)] = ∃x∃y¬(x∈L→x∘y∈L) = ∃x∃y( x∈L ∧ x∘y∉L ).
+  Two load-bearing rules: (a) **negating an implication** — A→B is false in exactly one case (A true,
+  B false), because A→B ≡ ¬A∨B and ¬(¬A∨B) = A∧¬B; so keep the hypothesis TRUE and make the
+  conclusion FALSE, never negate → into another →. (b) **∀ becomes ∃** — a universal fails via ONE
+  counterexample: one x∈L with one extension x∘y∉L. Sanity check: read the negation aloud and confirm
+  it says "here is a specific counterexample to the original." Common slips: keeping ∀ (∀x∀y
+  (x∈L→x∘y∉L)); negating the wrong atoms (∃x∃y(x∉L ∧ x∘y∈L)); mismatched quantifiers (∃x∀y…) — both
+  x and y are witnesses, so both are ∃.
