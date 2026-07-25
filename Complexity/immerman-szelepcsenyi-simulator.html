@@ -285,8 +285,9 @@ footer{margin-top:34px; padding-top:16px; border-top:1px solid var(--rule); font
   </div>
   <label class="field">speed
     <select id="sel-speed">
-      <option value="260">slow</option>
-      <option value="90" selected>steady</option>
+      <option value="600">very slow</option>
+      <option value="260" selected>slow</option>
+      <option value="90">steady</option>
       <option value="24">fast</option>
       <option value="1">blur</option>
     </select>
@@ -353,11 +354,8 @@ footer{margin-top:34px; padding-top:16px; border-top:1px solid var(--rule); font
           <button id="b-addv">+ vertex</button>
           <button id="b-delv">− vertex</button>
         </div>
-        <div style="display:flex; flex-wrap:wrap; gap:7px; margin-top:7px">
-          <button data-preset="0">unreachable t</button>
-          <button data-preset="1">reachable t</button>
-          <button data-preset="2">long chain</button>
-        </div>
+        <div style="display:flex; flex-wrap:wrap; gap:7px; margin-top:9px" id="presets"></div>
+        <p class="hint" id="sizehint" style="margin:8px 0 0"></p>
       </div>
     </section>
 
@@ -496,9 +494,11 @@ const DRIVER = [
    GRAPH MODEL
    ═══════════════════════════════════════════════════════════════════ */
 const PRESETS = [
-  {name:"unreachable t", n:5, s:0, t:4, E:[[0,1],[0,2],[1,2],[2,1],[2,3],[3,1],[4,3]]},
-  {name:"reachable t",   n:5, s:0, t:4, E:[[0,1],[0,2],[1,2],[2,1],[2,3],[3,1],[3,4]]},
-  {name:"long chain",    n:5, s:0, t:4, E:[[0,1],[1,2],[2,3],[4,0]]},
+  {name:"3 vertices · t out of reach", n:3, s:0, t:2, E:[[0,1],[1,0]]},
+  {name:"3 vertices · t reachable",    n:3, s:0, t:2, E:[[0,1],[1,2]]},
+  {name:"2 vertices · smallest there is", n:2, s:0, t:1, E:[]},
+  {name:"5 vertices · t out of reach",  n:5, s:0, t:4, E:[[0,1],[0,2],[1,2],[2,1],[2,3],[3,1],[4,3]]},
+  {name:"5 vertices · t reachable",     n:5, s:0, t:4, E:[[0,1],[0,2],[1,2],[2,1],[2,3],[3,1],[3,4]]},
 ];
 let G = null;
 function loadPreset(i){
@@ -1033,6 +1033,18 @@ function renderBranch(step){
   $("branch-note").textContent = document.getElementById("sel-mode").selectedOptions[0].textContent;
 }
 
+let sizeCache = {len:-1, guesses:0};
+function updateSizeHint(){
+  if(sizeCache.len !== sim.trace.length)
+    sizeCache = {len:sim.trace.length, guesses:sim.trace.filter(x=>x.kind==="guess").length};
+  $("sizehint").textContent =
+      `n = ${G.n} — this run is ${sim.trace.length} configuration${sim.trace.length===1?"":"s"}`
+    + `${sim.done?"":" so far"}, with ${sizeCache.guesses} branch point${sizeCache.guesses===1?"":"s"}. `
+    + `The cost grows like n⁴, so 3 vertices is a few hundred steps and 5 is already a few thousand.`;
+  $("b-addv").disabled = G.n >= 7;
+  $("b-delv").disabled = G.n <= 2;
+}
+
 let logBuilt = 0;
 function renderLog(reset){
   const host = $("log");
@@ -1077,6 +1089,7 @@ function render(){
   fillLayerTable(step ? step.st : null);
   renderBranch(step);
   renderChoice();
+  updateSizeHint();
   renderLog(false);
   markLog();
 
@@ -1189,7 +1202,7 @@ function wire(){
     G.n++; selNode=null; buildSelectors(); rebuild();
   };
   $("b-delv").onclick = ()=>{
-    if(G.n<=3) return;
+    if(G.n<=2) return;
     const gone=G.n-1;
     G.E = new Set(Array.from(G.E).filter(k=>{
       const [a,b]=k.split(",").map(Number); return a!==gone && b!==gone;
@@ -1200,8 +1213,12 @@ function wire(){
     if(G.s===G.t) G.s = (G.t+1)%G.n;
     selNode=null; buildSelectors(); rebuild();
   };
-  document.querySelectorAll("[data-preset]").forEach(b=>{
-    b.onclick = ()=>{ loadPreset(+b.dataset.preset); selNode=null; buildSelectors(); rebuild(); };
+  const ph = $("presets");
+  PRESETS.forEach((p,i)=>{
+    const b = document.createElement("button");
+    b.textContent = p.name;
+    b.onclick = ()=>{ loadPreset(i); selNode=null; buildSelectors(); rebuild(); };
+    ph.appendChild(b);
   });
 
   document.addEventListener("keydown", e=>{
