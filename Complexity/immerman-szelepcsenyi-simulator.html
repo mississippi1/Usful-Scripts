@@ -1,0 +1,1251 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Immerman–Szelepcsényi, one step at a time</title>
+</head>
+<body>
+<style>
+/* ─────────────────────────────  tokens  ───────────────────────────── */
+:root{
+  --ground:#EDF0F2;      --panel:#FFFFFF;      --sunk:#E4E9EC;
+  --rule:#CFD8DE;        --rule-soft:#E1E7EB;  --edge:#93A4B0;
+  --ink:#161C21;         --ink-2:#3D4A54;      --ink-3:#6A7A86;
+  --amber:#8A5606;       --amber-bg:#F6E7C9;   --amber-line:#C08A22;
+  --violet:#513FB0;      --violet-bg:#E6E2F8;
+  --green:#1D6E51;       --green-bg:#D6EBE1;
+  --red:#A33520;         --red-bg:#F6DED7;
+  --shadow:0 1px 0 rgba(22,28,33,.05), 0 1px 3px rgba(22,28,33,.07);
+  --mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,ui-serif,serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --ground:#0E1317;    --panel:#161C22;      --sunk:#11171C;
+    --rule:#28323A;      --rule-soft:#1F272E;   --edge:#55666F;
+    --ink:#D9E0E6;       --ink-2:#A9B6C1;      --ink-3:#78868F;
+    --amber:#E0A340;     --amber-bg:#3A2C10;   --amber-line:#B27F22;
+    --violet:#A392F0;    --violet-bg:#25204A;
+    --green:#4FB08A;     --green-bg:#123026;
+    --red:#EE7A61;       --red-bg:#3A1A13;
+    --shadow:0 1px 0 rgba(0,0,0,.3), 0 1px 4px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0E1317;    --panel:#161C22;      --sunk:#11171C;
+  --rule:#28323A;      --rule-soft:#1F272E;   --edge:#55666F;
+  --ink:#D9E0E6;       --ink-2:#A9B6C1;      --ink-3:#78868F;
+  --amber:#E0A340;     --amber-bg:#3A2C10;   --amber-line:#B27F22;
+  --violet:#A392F0;    --violet-bg:#25204A;
+  --green:#4FB08A;     --green-bg:#123026;
+  --red:#EE7A61;       --red-bg:#3A1A13;
+  --shadow:0 1px 0 rgba(0,0,0,.3), 0 1px 4px rgba(0,0,0,.35);
+}
+:root[data-theme="light"]{
+  --ground:#EDF0F2;      --panel:#FFFFFF;      --sunk:#E4E9EC;
+  --rule:#CFD8DE;        --rule-soft:#E1E7EB;  --edge:#93A4B0;
+  --ink:#161C21;         --ink-2:#3D4A54;      --ink-3:#6A7A86;
+  --amber:#8A5606;       --amber-bg:#F6E7C9;   --amber-line:#C08A22;
+  --violet:#513FB0;      --violet-bg:#E6E2F8;
+  --green:#1D6E51;       --green-bg:#D6EBE1;
+  --red:#A33520;         --red-bg:#F6DED7;
+  --shadow:0 1px 0 rgba(22,28,33,.05), 0 1px 3px rgba(22,28,33,.07);
+}
+
+*{box-sizing:border-box}
+.bar{text-decoration:overline; text-decoration-thickness:1px}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--mono); font-size:13px; line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+:focus-visible{outline:2px solid var(--amber-line); outline-offset:2px}
+
+/* ─────────────────────────────  shell  ───────────────────────────── */
+.wrap{max-width:1560px; margin:0 auto; padding:0 18px 64px}
+
+header.masthead{padding:34px 0 20px; border-bottom:1px solid var(--rule)}
+.eyebrow{
+  font-size:10.5px; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--ink-3); margin:0 0 10px
+}
+h1{
+  font-family:var(--serif); font-weight:600; font-size:clamp(28px,4.2vw,44px);
+  line-height:1.08; letter-spacing:-.012em; margin:0; text-wrap:balance;
+}
+h1 em{font-style:italic; color:var(--amber)}
+.deck{
+  font-family:var(--serif); font-size:16px; line-height:1.5; color:var(--ink-2);
+  max-width:60ch; margin:12px 0 0
+}
+.deck code{font-family:var(--mono); font-size:13px; background:var(--sunk); padding:1px 4px; border-radius:3px}
+
+/* ───────────────────────────  transport  ─────────────────────────── */
+.transport{
+  position:sticky; top:0; z-index:40; margin:0 -18px; padding:10px 18px;
+  background:color-mix(in srgb, var(--ground) 88%, transparent);
+  backdrop-filter:blur(8px); border-bottom:1px solid var(--rule);
+  display:flex; flex-wrap:wrap; gap:10px; align-items:center;
+}
+.tgroup{display:flex; gap:0; align-items:stretch; border:1px solid var(--rule); border-radius:4px; overflow:hidden; background:var(--panel)}
+.tgroup>button{border:0; border-right:1px solid var(--rule-soft); border-radius:0}
+.tgroup>button:last-child{border-right:0}
+button, select{
+  font-family:var(--mono); font-size:12px; color:var(--ink);
+  background:var(--panel); border:1px solid var(--rule); border-radius:4px;
+  padding:6px 10px; cursor:pointer; transition:background .12s, color .12s;
+}
+button:hover:not(:disabled){background:var(--sunk)}
+button:disabled{opacity:.38; cursor:not-allowed}
+button.primary{background:var(--amber-bg); color:var(--amber); border-color:var(--amber-line); font-weight:600}
+button.primary:hover:not(:disabled){filter:brightness(1.05)}
+label.field{display:flex; align-items:center; gap:6px; font-size:11px; color:var(--ink-3); letter-spacing:.04em}
+.spacer{flex:1 1 auto}
+
+.scrub{display:flex; align-items:center; gap:9px; flex:1 1 260px; min-width:200px}
+.scrub input[type=range]{
+  flex:1; min-width:80px; appearance:none; -webkit-appearance:none;
+  height:4px; border-radius:2px; background:var(--rule); cursor:pointer;
+}
+.scrub input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none; width:13px; height:13px; border-radius:50%;
+  background:var(--amber-line); border:2px solid var(--panel); cursor:pointer;
+}
+.scrub input[type=range]::-moz-range-thumb{
+  width:11px; height:11px; border-radius:50%; border:2px solid var(--panel);
+  background:var(--amber-line); cursor:pointer;
+}
+.stepno{font-variant-numeric:tabular-nums; font-size:11.5px; color:var(--ink-3); white-space:nowrap}
+
+.verdict{
+  font-size:11px; letter-spacing:.1em; text-transform:uppercase; font-weight:700;
+  padding:5px 11px; border-radius:3px; border:1px solid var(--rule);
+  background:var(--sunk); color:var(--ink-3); white-space:nowrap
+}
+.verdict.accept{background:var(--green-bg); color:var(--green); border-color:currentColor}
+.verdict.reject{background:var(--red-bg); color:var(--red); border-color:currentColor}
+.verdict.live{background:var(--amber-bg); color:var(--amber); border-color:var(--amber-line)}
+
+/* ─────────────────────────────  grid  ───────────────────────────── */
+.deckgrid{display:grid; gap:16px; margin-top:16px; grid-template-columns:1fr}
+@media (min-width:1040px){ .deckgrid{grid-template-columns:1fr 1fr} }
+@media (min-width:1380px){ .deckgrid{grid-template-columns:minmax(330px,.95fr) minmax(360px,1.05fr) minmax(330px,1fr)} }
+
+.panel{background:var(--panel); border:1px solid var(--rule); border-radius:5px; box-shadow:var(--shadow); overflow:hidden}
+.panel>h2{
+  margin:0; padding:9px 13px; font-family:var(--mono); font-weight:600;
+  font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3);
+  border-bottom:1px solid var(--rule-soft); display:flex; justify-content:space-between; gap:8px; align-items:baseline;
+}
+.panel>h2 .h2note{font-weight:400; letter-spacing:.03em; text-transform:none; font-size:11px; color:var(--ink-3)}
+.pad{padding:13px}
+.stack{display:flex; flex-direction:column; gap:16px}
+
+/* ───────────────────────────  program  ──────────────────────────── */
+.prog{font-size:12.5px; line-height:1.62; padding:6px 0}
+.pline{display:grid; grid-template-columns:26px 1fr; gap:8px; padding:1px 13px 1px 6px; border-left:3px solid transparent}
+.pline .ln{color:var(--ink-3); text-align:right; font-variant-numeric:tabular-nums; font-size:11px; opacity:.75}
+.pline .code{white-space:pre-wrap; word-break:break-word}
+.pline .cmt{color:var(--ink-3); font-style:italic}
+.pline.on{background:var(--amber-bg); border-left-color:var(--amber-line)}
+.pline.on .code{color:var(--amber); font-weight:600}
+.pline.on .cmt{color:var(--amber); opacity:.85; font-weight:400}
+.pline.star .code{color:var(--violet)}
+.pline.on.star{background:var(--violet-bg); border-left-color:var(--violet)}
+.pline.on.star .code, .pline.on.star .cmt{color:var(--violet)}
+.pline.dead{opacity:.42}
+.i1{padding-left:1.6em} .i2{padding-left:3.2em} .i3{padding-left:4.8em} .i4{padding-left:6.4em}
+.progsplit{border-top:1px dashed var(--rule); margin:8px 0 4px}
+
+/* ───────────────────────────  graph  ─────────────────────────── */
+svg.graph{display:block; width:100%; height:auto; touch-action:manipulation}
+.gv-circle{fill:var(--sunk); stroke:var(--rule); stroke-width:1.5; transition:fill .1s, stroke .1s}
+.gv-label{font-family:var(--mono); font-size:14px; font-weight:600; fill:var(--ink); pointer-events:none; user-select:none}
+.gv-tag{font-family:var(--mono); font-size:10px; letter-spacing:.08em; fill:var(--ink-3); pointer-events:none; user-select:none}
+.gnode{cursor:pointer}
+.gnode:hover .gv-circle{stroke:var(--amber-line)}
+.gv-circle.counted{fill:var(--green-bg); stroke:var(--green)}
+.gv-circle.isv{stroke:var(--amber-line); stroke-width:3}
+.gv-circle.isu{stroke-dasharray:4 3; stroke:var(--violet); stroke-width:3}
+.gv-circle.cur{fill:var(--violet-bg); stroke:var(--violet); stroke-width:3}
+.gv-circle.deleted{fill:none; stroke-dasharray:3 4; opacity:.34}
+.gv-circle.sel{stroke:var(--amber-line); stroke-width:3; stroke-dasharray:2 3}
+.gedge{stroke:var(--edge); stroke-width:1.6; fill:none}
+.gedge.dim{opacity:.28}
+.gedge.opt{stroke:var(--violet); stroke-width:2; stroke-dasharray:4 3}
+.gedge.taken{stroke:var(--violet); stroke-width:3}
+.gedge.probe{stroke:var(--amber-line); stroke-width:3}
+.hint{font-size:11px; color:var(--ink-3); line-height:1.45}
+
+/* ───────────────────────────  walk  ─────────────────────────── */
+.walkrow{display:flex; flex-wrap:wrap; align-items:center; gap:5px; min-height:28px}
+.chip{
+  display:inline-flex; align-items:center; justify-content:center; min-width:24px; height:24px;
+  padding:0 6px; border:1px solid var(--rule); border-radius:3px; background:var(--sunk);
+  font-size:12px; font-variant-numeric:tabular-nums
+}
+.chip.head{background:var(--violet-bg); border-color:var(--violet); color:var(--violet); font-weight:700}
+.chip.goal{background:var(--panel); border-style:dashed; border-color:var(--violet); color:var(--violet)}
+.arrow{color:var(--ink-3); font-size:11px}
+.budget{font-size:11px; color:var(--ink-3); margin-left:auto; white-space:nowrap}
+
+.choicebox{border:1px solid var(--violet); background:var(--violet-bg); border-radius:4px; padding:10px; margin-top:11px}
+.choicebox .ct{font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--violet); font-weight:700; margin-bottom:7px}
+.choicebox .opts{display:flex; flex-wrap:wrap; gap:6px}
+.choicebox button{background:var(--panel); border-color:var(--violet); color:var(--violet); font-weight:600}
+
+/* ───────────────────────────  tables  ─────────────────────────── */
+.tblwrap{overflow-x:auto}
+table{border-collapse:collapse; width:100%; font-variant-numeric:tabular-nums; font-size:12px}
+th,td{padding:4px 8px; text-align:right; border-bottom:1px solid var(--rule-soft); white-space:nowrap}
+th{font-weight:600; font-size:11px; letter-spacing:.03em; color:var(--ink-3); text-align:right}
+th:first-child, td:first-child{text-align:left}
+tr.now td{background:var(--amber-bg); color:var(--amber); font-weight:700}
+td.pend{color:var(--ink-3); opacity:.5}
+
+/* ───────────────────────────  tape  ─────────────────────────── */
+.reg{display:grid; grid-template-columns:52px 40px 1fr; gap:8px; align-items:center; padding:2.5px 0}
+.reg .rn{color:var(--ink-2); font-size:12px}
+.reg .rv{font-variant-numeric:tabular-nums; text-align:right; font-weight:600; font-size:12.5px}
+.reg.hot .rn, .reg.hot .rv{color:var(--amber)}
+.bits{display:flex; gap:2px}
+.bit{
+  width:13px; height:16px; display:flex; align-items:center; justify-content:center;
+  font-size:9.5px; border:1px solid var(--rule-soft); background:var(--sunk); color:var(--ink-3); border-radius:2px
+}
+.bit.one{background:var(--amber-bg); color:var(--amber); border-color:var(--amber-line); font-weight:700}
+.reg.hot .bit{border-color:var(--amber-line)}
+.tapestrip{display:flex; flex-wrap:wrap; gap:2px; margin-top:4px}
+.tapestrip .bit{width:11px; height:14px; font-size:8.5px}
+.acct{font-size:11px; color:var(--ink-3); line-height:1.55; margin-top:9px; padding-top:9px; border-top:1px dashed var(--rule)}
+.acct b{color:var(--ink-2); font-weight:600}
+
+.matrix{display:inline-grid; gap:2px; font-variant-numeric:tabular-nums}
+.mcell{
+  width:17px; height:17px; display:flex; align-items:center; justify-content:center;
+  font-size:10px; border:1px solid var(--rule-soft); border-radius:2px; background:var(--sunk); color:var(--ink-3)
+}
+.mcell.one{background:var(--panel); color:var(--ink); border-color:var(--rule); font-weight:600}
+.mcell.hdr{border:0; background:none; color:var(--ink-3); font-size:9.5px}
+.mcell.probe{outline:2px solid var(--amber-line); outline-offset:-1px; background:var(--amber-bg); color:var(--amber)}
+.mcell.rowprobe{background:color-mix(in srgb, var(--amber-bg) 55%, transparent)}
+
+/* ───────────────────────────  trace  ─────────────────────────── */
+.log{height:340px; overflow-y:auto; position:relative; font-size:11.5px}
+.logrow{display:grid; grid-template-columns:44px 26px 1fr; gap:7px; padding:3px 12px; cursor:pointer; border-left:3px solid transparent}
+.logrow:hover{background:var(--sunk)}
+.logrow .li{color:var(--ink-3); font-variant-numeric:tabular-nums; font-size:10.5px; text-align:right}
+.logrow .ll{color:var(--ink-3); font-size:10.5px; text-align:right}
+.logrow .lm{color:var(--ink-2); word-break:break-word}
+.logrow.on{background:var(--amber-bg); border-left-color:var(--amber-line)}
+.logrow.on .lm, .logrow.on .li, .logrow.on .ll{color:var(--amber)}
+.logrow.k-guess .lm{color:var(--violet)}
+.logrow.k-reject .lm{color:var(--red); font-weight:600}
+.logrow.k-accept .lm{color:var(--green); font-weight:600}
+.logrow.k-phase{border-top:1px solid var(--rule); border-bottom:1px solid var(--rule); background:var(--sunk)}
+.logrow.k-phase .lm{color:var(--ink); font-weight:600}
+
+/* ───────────────────────────  essay  ─────────────────────────── */
+.essay{margin-top:34px; padding-top:26px; border-top:1px solid var(--rule)}
+.essay-grid{display:grid; gap:26px 42px; grid-template-columns:1fr}
+@media (min-width:900px){ .essay-grid{grid-template-columns:1fr 1fr} }
+.essay h3{
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--ink-3); margin:0 0 9px; font-weight:600
+}
+.essay p{font-family:var(--serif); font-size:15px; line-height:1.62; color:var(--ink-2); margin:0 0 11px; max-width:64ch}
+.essay p:last-child{margin-bottom:0}
+.essay code{font-family:var(--mono); font-size:12.5px; background:var(--sunk); padding:1px 4px; border-radius:3px; color:var(--ink)}
+.essay strong{color:var(--ink); font-weight:600}
+.pull{border-left:3px solid var(--amber-line); padding:2px 0 2px 15px; background:none}
+footer{margin-top:34px; padding-top:16px; border-top:1px solid var(--rule); font-size:11px; color:var(--ink-3)}
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <p class="eyebrow">NL = coNL · inductive counting · one configuration per click</p>
+  <h1>A log-space machine that certifies <em>the absence</em> of a path</h1>
+  <p class="deck">
+    Immerman and Szelepcsényi's machine for <code class="bar">PATH</code> — accept <code>&#10216;G,s,t&#10217;</code> exactly when
+    <em>no</em> directed path runs from <code>s</code> to <code>t</code>. Nondeterminism can normally only witness that
+    something <em>exists</em>; this machine turns guessing into certainty by counting. Every register, every guessed
+    step and every killed branch below is a real configuration of that machine.
+  </p>
+</header>
+
+<div class="transport">
+  <div class="tgroup">
+    <button id="b-reset" title="Back to the start (R)">⏮</button>
+    <button id="b-back" title="One step back (←)">◀</button>
+    <button id="b-play" class="primary" title="Run / pause (space)">▶&nbsp;run</button>
+    <button id="b-fwd" title="One step forward (→)">▶</button>
+    <button id="b-end" title="Jump to the verdict (E)">⏭</button>
+  </div>
+  <label class="field">speed
+    <select id="sel-speed">
+      <option value="600">very slow</option>
+      <option value="260" selected>slow</option>
+      <option value="90">steady</option>
+      <option value="24">fast</option>
+      <option value="1">blur</option>
+    </select>
+  </label>
+  <label class="field">branch
+    <select id="sel-mode">
+      <option value="honest" selected>honest oracle</option>
+      <option value="random">random guesses</option>
+      <option value="manual">i guess by hand</option>
+    </select>
+  </label>
+  <div class="tgroup">
+    <button id="j-guess" title="Jump to the next nondeterministic choice">next ★</button>
+    <button id="j-k" title="Jump to the next layer k">next k</button>
+    <button id="j-v" title="Jump to the next candidate v">next v</button>
+    <button id="j-kill" title="Jump to the next killed branch">next kill</button>
+  </div>
+  <div class="spacer"></div>
+  <div class="scrub">
+    <input type="range" id="scrub" min="0" max="0" value="0" aria-label="Scrub through the machine trace">
+    <span class="stepno" id="stepno">0 / 0</span>
+  </div>
+  <span class="verdict" id="verdict">idle</span>
+</div>
+
+<div class="deckgrid">
+
+  <!-- ══════════════ column 1 ══════════════ -->
+  <div class="stack">
+    <section class="panel">
+      <h2>Program <span class="h2note" id="pc-note">program counter</span></h2>
+      <div class="prog" id="prog"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Branch <span class="h2note" id="branch-note"></span></h2>
+      <div class="pad">
+        <div id="branchbox"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ══════════════ column 2 ══════════════ -->
+  <div class="stack">
+    <section class="panel">
+      <h2>Graph <span class="h2note" id="graph-note"></span></h2>
+      <div class="pad">
+        <svg class="graph" id="svg" viewBox="0 0 320 250" role="img" aria-label="The input graph, with the machine's current walk highlighted"></svg>
+        <div class="walkrow" id="walk" style="margin-top:8px"></div>
+        <div id="choicehost"></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Input <span class="h2note">read-only tape · does not count toward space</span></h2>
+      <div class="pad">
+        <div class="tblwrap"><div class="matrix" id="matrix"></div></div>
+        <p class="hint" style="margin:9px 0 0" id="edit-hint">
+          Click a vertex, then another, to toggle the edge between them. Click the same vertex twice to deselect.
+        </p>
+        <div style="display:flex; flex-wrap:wrap; gap:7px; margin-top:9px; align-items:center">
+          <label class="field">s <select id="sel-s"></select></label>
+          <label class="field">t <select id="sel-t"></select></label>
+          <button id="b-addv">+ vertex</button>
+          <button id="b-delv">− vertex</button>
+        </div>
+        <div style="display:flex; flex-wrap:wrap; gap:7px; margin-top:9px" id="presets"></div>
+        <p class="hint" id="sizehint" style="margin:8px 0 0"></p>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Layer counts <span class="h2note">C&#8342; = #{x : dist(s,x) &#8804; k}</span></h2>
+      <div class="pad tblwrap"><table id="layers"></table></div>
+    </section>
+  </div>
+
+  <!-- ══════════════ column 3 ══════════════ -->
+  <div class="stack">
+    <section class="panel">
+      <h2>Work tape <span class="h2note" id="tape-note"></span></h2>
+      <div class="pad">
+        <div id="regs"></div>
+        <div class="tapestrip" id="strip"></div>
+        <div class="acct" id="acct"></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Trace <span class="h2note" id="trace-note">click any line to travel there</span></h2>
+      <div class="log" id="log"></div>
+    </section>
+  </div>
+</div>
+
+<!-- ══════════════ essay ══════════════ -->
+<section class="essay">
+  <div class="essay-grid">
+    <div>
+      <h3>What the machine is for</h3>
+      <p>
+        A nondeterministic machine accepts when <em>some</em> branch says yes, so it is built for existence claims:
+        guess the path, verify it, accept. The complement asks for the opposite — a promise that
+        <strong>no</strong> branch could have found a path — and no single branch can see that. Swapping
+        <code>q_acc</code> and <code>q_rej</code> does not fix it: the flipped path-guesser accepts whenever some
+        guessed walk happens to miss <code>t</code>, which happens all the time even when a path exists.
+      </p>
+      <p>
+        Immerman and Szelepcsényi (independently, 1987–88) closed the gap with <strong>inductive counting</strong>,
+        and it gives more than <code><span class="bar">PATH</span> &#8712; NL</code>: since <code>PATH</code> is NL-complete, every
+        NL language's complement lands back in NL, so <strong>NL = coNL</strong> — and the same argument gives
+        <code>NSPACE(s) = coNSPACE(s)</code> for every <code>s &#8805; log n</code>.
+      </p>
+    </div>
+    <div>
+      <h3>Where the certainty comes from</h3>
+      <p>
+        Line 14 is the whole trick. Having counted <code>C&#8342;</code> vertices at distance <code>&#8804; k</code>,
+        the machine re-derives that number from scratch: it walks through every vertex <code>u</code>, guesses a
+        <code>&#8804; k</code>-step walk to it, and tallies the successes in <code>D</code>. A branch that guessed
+        lazily ends with <code>D &lt; C</code>, and is killed on the spot.
+      </p>
+      <p class="pull">
+        Only a branch that found <em>every</em> reachable vertex survives. For such a branch, "no <code>u</code>
+        pointed at <code>v</code>" is not a failure of imagination — it is a proof that <code>v</code> is
+        out of reach.
+      </p>
+      <p>
+        The rest follows: <code>C&#8345;</code> counts everything reachable in <code>G</code>, a second run counts
+        everything reachable in <code>G − t</code>, and the two agree precisely when deleting <code>t</code>
+        removed nothing reachable — that is, when <code>t</code> was never reachable at all.
+      </p>
+    </div>
+    <div>
+      <h3>Why it still fits in log space</h3>
+      <p>
+        Nothing is ever stored as a set. The machine holds ten counters — <code>k</code>, <code>C</code>,
+        <code>C&#8314;</code>, <code>D</code>, <code>v</code>, <code>u</code>, <code>cur</code>, <code>i</code>,
+        and the two phase results — plus two flag bits. Each counter is a number in <code>0…n</code>, so it costs
+        <code>&#8968;log&#8322;(n+1)&#8969;</code> bits, and the count of counters is fixed, independent of the input.
+        The work-tape panel adds them up for the graph you are actually running.
+      </p>
+      <p>
+        The price is time, not space: four nested loops over <code>V</code> with a walk inside make it roughly
+        <code>n&#8308;</code> steps — comfortably polynomial, which is the usual reminder that
+        <code>NL &#8838; P</code>.
+      </p>
+    </div>
+    <div>
+      <h3>Driving it yourself</h3>
+      <p>
+        <strong>Honest oracle</strong> plays the branch that always guesses well; it never trips line 14, and it is
+        the run whose existence the theorem asserts. <strong>Random guesses</strong> shows the other side — most
+        branches stumble into <code>D &lt; C</code> and die, which is exactly the behaviour that makes a surviving
+        branch trustworthy. <strong>Guess by hand</strong> hands you the choice at every ★, so you can try to cheat
+        and watch line 14 catch you.
+      </p>
+      <p>
+        The oracle is not part of the machine. It is a stand-in for the branch that a nondeterministic machine gets
+        for free — the reason honest runs can be assumed to exist without any branch ever computing a distance.
+      </p>
+    </div>
+  </div>
+  <footer>
+    Keyboard: <b>←</b> / <b>→</b> step, <b>space</b> run or pause, <b>R</b> reset, <b>E</b> jump to the verdict.
+    The pseudocode follows the course's formulation of the theorem: layer counts <code>C&#8342;</code>, the
+    <code>D &lt; C</code> kill, and two runs compared at the end.
+  </footer>
+</section>
+
+</div>
+
+<script>
+"use strict";
+/* ═══════════════════════════════════════════════════════════════════
+   THE PROGRAM — what the program counter points at
+   ═══════════════════════════════════════════════════════════════════ */
+const PROG = [
+  {id:1,  ind:0, code:"C ← 1",                          cmt:"C₀ — only s is reachable in ≤ 0 steps"},
+  {id:2,  ind:0, code:"for k ← 0 … n−1:",               cmt:"one layer per round"},
+  {id:3,  ind:1, code:"C⁺ ← 0",                         cmt:"accumulator for Cₖ₊₁"},
+  {id:4,  ind:1, code:"for v ∈ V:",                     cmt:"candidate: is dist(s,v) ≤ k+1 ?"},
+  {id:5,  ind:2, code:"D ← 0 ;  cert ← false",          cmt:"D will re-derive Cₖ"},
+  {id:6,  ind:2, code:"for u ∈ V:",                     cmt:"re-enumerate every vertex"},
+  {id:7,  ind:3, code:"cur ← s ;  i ← 0",               cmt:"start a fresh guessed walk"},
+  {id:8,  ind:3, code:"while i < k and cur ≠ u:",       cmt:""},
+  {id:9,  ind:4, code:"guess  cur ← w,  (cur,w) ∈ E",   cmt:"★ nondeterministic", star:true},
+  {id:10, ind:4, code:"i ← i + 1",                      cmt:""},
+  {id:11, ind:3, code:"if cur = u:",                    cmt:"the walk proves dist(s,u) ≤ k"},
+  {id:12, ind:4, code:"D ← D + 1",                      cmt:""},
+  {id:13, ind:4, code:"if u = v or (u,v) ∈ E:  cert ← true", cmt:"…so dist(s,v) ≤ k+1"},
+  {id:14, ind:2, code:"if D < C:  reject",              cmt:"⚠ a reachable u was missed — kill this branch"},
+  {id:15, ind:2, code:"if cert:  C⁺ ← C⁺ + 1",          cmt:""},
+  {id:16, ind:1, code:"C ← C⁺",                         cmt:"Cₖ₊₁, now known with certainty"},
+  {id:17, ind:0, code:"return C",                       cmt:"= #{x : s ⇝ x}"},
+];
+const DRIVER = [
+  {id:"D1", ind:0, code:"R  ← COUNT(G)",                cmt:"phase A"},
+  {id:"D2", ind:0, code:"R′ ← COUNT(G − t)",            cmt:"phase B — t and its edges deleted"},
+  {id:"D3", ind:0, code:"accept iff R = R′",            cmt:"equal ⟺ deleting t lost nothing ⟺ s ⇝̸ t"},
+];
+
+/* ═══════════════════════════════════════════════════════════════════
+   GRAPH MODEL
+   ═══════════════════════════════════════════════════════════════════ */
+const PRESETS = [
+  {name:"3 vertices · t out of reach", n:3, s:0, t:2, E:[[0,1],[1,0]]},
+  {name:"3 vertices · t reachable",    n:3, s:0, t:2, E:[[0,1],[1,2]]},
+  {name:"2 vertices · smallest there is", n:2, s:0, t:1, E:[]},
+  {name:"5 vertices · t out of reach",  n:5, s:0, t:4, E:[[0,1],[0,2],[1,2],[2,1],[2,3],[3,1],[4,3]]},
+  {name:"5 vertices · t reachable",     n:5, s:0, t:4, E:[[0,1],[0,2],[1,2],[2,1],[2,3],[3,1],[3,4]]},
+];
+let G = null;
+function loadPreset(i){
+  const p = PRESETS[i];
+  G = {n:p.n, s:p.s, t:p.t, E:new Set(p.E.map(([a,b])=>a+","+b))};
+}
+const key=(a,b)=>a+","+b;
+const hasE=(a,b)=>G.E.has(key(a,b));
+const allV=()=>Array.from({length:G.n},(_,i)=>i);
+
+/* ═══════════════════════════════════════════════════════════════════
+   THE MACHINE — a generator that yields one configuration per step
+   Each yield is either {type:'ASK'} (a nondeterministic branch point,
+   answered by the driver) or a trace step to display.
+   ═══════════════════════════════════════════════════════════════════ */
+const STOP = "stop";
+
+function* machine(){
+  const st = {
+    phase:null, k:null, C:null, Cp:null, D:null, v:null, u:null,
+    cur:null, i:null, cert:null, R:null, Rp:null,
+    counted:[], walk:[], goal:null, deleted:null,
+    layersA:[], layersB:[], alive:true, verdict:null,
+  };
+  let seq = 0;
+  const emit = (line,kind,msg,extra) => ({
+    n:seq++, line, kind, msg,
+    st:{...st, counted:st.counted.slice(), walk:st.walk.slice(),
+        layersA:st.layersA.slice(), layersB:st.layersB.slice()},
+    ...(extra||{})
+  });
+
+  /* ── one COUNT(·) run ───────────────────────────────────────────── */
+  function* count(V, edge, s, layers){
+    const n = G.n;                       // layers to run: |V| of the original graph
+    st.C = V.includes(s) ? 1 : 0;
+    st.k=null; st.Cp=null; st.D=null; st.v=null; st.u=null;
+    st.cur=null; st.i=null; st.cert=null; st.counted=[]; st.walk=[]; st.goal=null;
+    layers.length = 0; layers.push(st.C);
+    yield emit(1,"set",`C₀ ← ${st.C} — before any step is taken, only s = ${s} is reachable.`);
+
+    for(let k=0;k<n;k++){
+      st.k = k;
+      yield emit(2,"layer",`k = ${k}.  Using C${sub(k)} = ${st.C}, compute C${sub(k+1)}.`);
+      st.Cp = 0;
+      yield emit(3,"set",`C⁺ ← 0.`);
+
+      for(const v of V){
+        st.v = v;
+        yield emit(4,"cand",`candidate v = ${v}: decide whether dist(s,${v}) ≤ ${k+1}.`);
+        st.D = 0; st.cert = false; st.counted = [];
+        yield emit(5,"set",`D ← 0, cert ← false.  D must climb back to C${sub(k)} = ${st.C} or this branch dies.`);
+
+        for(const u of V){
+          st.u = u;
+          yield emit(6,"inner",`u = ${u}: guess a walk of at most ${k} step${k===1?"":"s"} from s to ${u}.`);
+          st.cur = s; st.i = 0; st.walk = [s]; st.goal = u;
+          yield emit(7,"set",`cur ← ${s}, i ← 0.`);
+
+          while(true){
+            if(st.cur === u){
+              yield emit(8,"test",`cur = ${st.cur} = u — the walk arrived, stop stepping.`);
+              break;
+            }
+            if(st.i >= k){
+              yield emit(8,"test",`i = ${st.i} is the whole budget k = ${k} — no step left, the walk ends at ${st.cur}.`);
+              break;
+            }
+            yield emit(8,"test",`i = ${st.i} < k = ${k} and cur = ${st.cur} ≠ u = ${u} — keep walking.`);
+            const succ = V.filter(w=>edge(st.cur,w));
+            const options = succ.concat([STOP]);
+            const w = yield {type:"ASK", options, cur:st.cur, goal:u, rem:k-st.i};
+            if(w === STOP){
+              yield emit(9,"guess",
+                succ.length ? `the branch gives up on this walk at ${st.cur}.`
+                            : `${st.cur} has no outgoing edge — the walk can only end here.`,
+                {options, chose:STOP, probeRow:st.cur});
+              break;
+            }
+            st.walk.push(w);
+            const from = st.cur; st.cur = w;
+            yield emit(9,"guess",`guess w = ${w}, following the edge ${from}→${w}.`,
+                       {options, chose:w, takenEdge:[from,w], probeRow:from});
+            st.i++;
+            yield emit(10,"set",`i ← ${st.i}.`);
+          }
+
+          st.goal = null;
+          if(st.cur === u){
+            yield emit(11,"test",`cur = u = ${u} ✓ — this walk is a certificate that dist(s,${u}) ≤ ${k}.`);
+            st.D++; st.counted.push(u);
+            yield emit(12,"set",`D ← ${st.D}.`);
+            const self = (u === v), e = edge(u,v);
+            if(self || e){
+              st.cert = true;
+              yield emit(13,"set",
+                self ? `u = v, so the very same walk reaches ${v} in ≤ ${k} ≤ ${k+1} steps ⇒ cert ← true.`
+                     : `edge ${u}→${v} exists, so ${v} is reached in ≤ ${k+1} steps ⇒ cert ← true.`,
+                {probe:[u,v]});
+            } else {
+              yield emit(13,"test",`u ≠ v and there is no edge ${u}→${v} — no certificate for ${v} from this u.`,
+                         {probe:[u,v]});
+            }
+          } else {
+            yield emit(11,"test",`cur = ${st.cur} ≠ u = ${u} — this branch did not reach ${u}, so it says nothing about it.`);
+          }
+        }
+
+        yield emit(14,"test",`the u-loop is done: D = ${st.D}, C${sub(k)} = ${st.C}.`);
+        if(st.D < st.C){
+          st.alive = false; st.verdict = "kill";
+          yield emit(14,"reject",
+            `D = ${st.D} < C${sub(k)} = ${st.C}. This branch missed ${st.C-st.D} vertex${st.C-st.D===1?"":"es"} it should have reached, so its silence about ${st.v} proves nothing. REJECT — the branch is killed.`);
+          return {ok:false};
+        }
+        yield emit(14,"ok",`D = C${sub(k)} = ${st.C} ✓ — every vertex at distance ≤ ${k} was found, so this branch's negative answers are trustworthy.`);
+        if(st.cert){
+          st.Cp++;
+          yield emit(15,"set",`cert is true ⇒ C⁺ ← ${st.Cp}.  dist(s,${v}) ≤ ${k+1}.`);
+        } else {
+          yield emit(15,"test",`cert is false, and D = C guarantees the search was complete ⇒ dist(s,${v}) > ${k+1}. C⁺ stays ${st.Cp}.`);
+        }
+      }
+
+      st.C = st.Cp; layers.push(st.C);
+      yield emit(16,"set",`C${sub(k+1)} ← ${st.C}.`);
+    }
+    st.v=null; st.u=null; st.cur=null; st.i=null; st.cert=null; st.counted=[]; st.walk=[];
+    yield emit(17,"ret",`COUNT returns ${st.C} — the number of vertices reachable from s.`);
+    return {ok:true, R:st.C};
+  }
+
+  /* ── phase A: G ─────────────────────────────────────────────────── */
+  st.phase = "A";
+  yield emit("D1","phase",`PHASE A — count everything reachable from s = ${G.s} in G.`);
+  const a = yield* count(allV(), hasE, G.s, st.layersA);
+  if(!a.ok) return;
+  st.R = a.R;
+  yield emit("D1","phase",`PHASE A done: R = ${st.R}.`);
+
+  /* ── phase B: G − t ─────────────────────────────────────────────── */
+  st.phase = "B"; st.deleted = G.t;
+  const V2 = allV().filter(x=>x!==G.t);
+  const edge2 = (x,y)=> x!==G.t && y!==G.t && hasE(x,y);
+  yield emit("D2","phase",`PHASE B — the same computation on G − t: vertex ${G.t} and every edge touching it are gone.`);
+  const b = yield* count(V2, edge2, G.s, st.layersB);
+  if(!b.ok) return;
+  st.Rp = b.R;
+  yield emit("D2","phase",`PHASE B done: R′ = ${st.Rp}.`);
+
+  /* ── verdict ────────────────────────────────────────────────────── */
+  if(st.R === st.Rp){
+    st.verdict = "accept";
+    yield emit("D3","accept",
+      `R = R′ = ${st.R}. Deleting t = ${G.t} cost the reachable set nothing, so t was never in it: there is no path ${G.s} ⇝ ${G.t}. ACCEPT — ⟨G,${G.s},${G.t}⟩ ∈ PATH̄.`);
+  } else {
+    st.verdict = "reject";
+    yield emit("D3","reject",
+      `R = ${st.R} but R′ = ${st.Rp}. Deleting t = ${G.t} shrank the reachable set, so t was in it: a path ${G.s} ⇝ ${G.t} exists. REJECT — ⟨G,${G.s},${G.t}⟩ ∉ PATH̄.`);
+  }
+}
+const SUBS = "₀₁₂₃₄₅₆₇₈₉";
+function sub(x){ return String(x).split("").map(c=>SUBS[+c]||c).join(""); }
+
+/* ═══════════════════════════════════════════════════════════════════
+   DRIVER — pulls steps, records every guess so the trace is rebuildable
+   ═══════════════════════════════════════════════════════════════════ */
+const MAX_STEPS = 250000;
+let sim = null;
+let view = 0, timer = null;
+
+function bfs(from, V, edge){
+  const d = new Map(V.map(x=>[x,Infinity]));
+  if(!d.has(from)) return d;
+  d.set(from,0);
+  const q=[from];
+  while(q.length){
+    const x=q.shift();
+    for(const y of V) if(edge(x,y) && d.get(y)===Infinity){ d.set(y,d.get(x)+1); q.push(y); }
+  }
+  return d;
+}
+/* the oracle: pick the branch a lucky run would take */
+function honestChoice(ask){
+  const phaseB = sim.phase === "B";
+  const V = phaseB ? allV().filter(x=>x!==G.t) : allV();
+  const edge = phaseB ? ((x,y)=>x!==G.t&&y!==G.t&&hasE(x,y)) : hasE;
+  const d = bfs(ask.cur, V, edge);
+  const dist = d.get(ask.goal);
+  if(!(dist <= ask.rem)) return STOP;          // unreachable in time — nothing to gain
+  const dg = bfs(ask.goal, V, (x,y)=>edge(y,x)); // distances *to* the goal
+  for(const w of ask.options) if(w!==STOP && dg.get(w) === dist-1) return w;
+  return STOP;
+}
+function randomChoice(ask){
+  const succ = ask.options.filter(w=>w!==STOP);
+  if(!succ.length) return STOP;
+  if(Math.random() < 0.18) return STOP;
+  return succ[Math.floor(Math.random()*succ.length)];
+}
+
+function newSim(guesses){
+  sim = {
+    gen: machine(), res: null, trace: [], guesses: guesses ? guesses.slice() : [],
+    gi: 0, pending: null, done: false, phase:"A",
+  };
+  sim.res = sim.gen.next();
+  pump();
+}
+/* pull steps until blocked (manual guess needed) or finished */
+function pump(limit){
+  const cap = limit == null ? Infinity : sim.trace.length + limit;
+  while(!sim.done && !sim.pending && sim.trace.length < cap && sim.trace.length < MAX_STEPS){
+    const r = sim.res;
+    if(r.done){ sim.done = true; break; }
+    const y = r.value;
+    if(y.type === "ASK"){
+      let choice;
+      if(sim.gi < sim.guesses.length){ choice = sim.guesses[sim.gi++]; }
+      else {
+        const mode = document.getElementById("sel-mode").value;
+        if(mode === "manual"){ sim.pending = y; break; }
+        choice = mode === "honest" ? honestChoice(y) : randomChoice(y);
+        sim.guesses.push(choice); sim.gi++;
+      }
+      /* a replayed guess may be illegal after an edit — fall back to stop */
+      if(choice !== STOP && !y.options.includes(choice)) choice = STOP;
+      sim.res = sim.gen.next(choice);
+    } else {
+      y.gi = sim.gi;
+      sim.trace.push(y);
+      sim.phase = y.st.phase || sim.phase;
+      sim.res = sim.gen.next();
+    }
+  }
+}
+function ensure(idx){ if(idx >= sim.trace.length) pump(idx - sim.trace.length + 1); }
+function answerPending(w){
+  if(!sim.pending) return;
+  sim.guesses.push(w); sim.gi++;
+  const y = sim.pending; sim.pending = null;
+  sim.res = sim.gen.next(y.options.includes(w) ? w : STOP);
+  pump();
+  view = sim.trace.length - 1;
+  render();
+}
+/* restart, keeping only the guesses made strictly before step `idx` */
+function forkAt(idx){
+  const keep = sim.trace[idx] ? sim.trace[idx].gi : 0;
+  const g = sim.guesses.slice(0, keep);
+  newSim(g);
+  view = Math.min(idx, sim.trace.length-1);
+  render();
+}
+function rebuild(){
+  stop();
+  newSim(null);
+  view = 0;
+  buildMatrix(); buildLayerTable(); renderLog(true); render();
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   RENDER
+   ═══════════════════════════════════════════════════════════════════ */
+const $ = id => document.getElementById(id);
+
+function buildProgram(){
+  const host = $("prog");
+  host.textContent = "";
+  const add = (l, isDriver) => {
+    const row = document.createElement("div");
+    row.className = "pline i"+l.ind + (l.star?" star":"");
+    row.dataset.line = l.id;
+    const ln = document.createElement("span"); ln.className="ln"; ln.textContent = isDriver? l.id : l.id;
+    const cd = document.createElement("span"); cd.className="code";
+    cd.textContent = l.code;
+    if(l.cmt){
+      const c = document.createElement("span"); c.className="cmt"; c.textContent = "   " + l.cmt;
+      cd.appendChild(c);
+    }
+    row.append(ln, cd);
+    host.appendChild(row);
+  };
+  const head = document.createElement("div");
+  head.className = "pline"; head.innerHTML =
+    '<span class="ln"></span><span class="code" style="color:var(--ink-3)">COUNT(V, E, s) — how many vertices are reachable from s?</span>';
+  host.appendChild(head);
+  PROG.forEach(l=>add(l,false));
+  const hr = document.createElement("div"); hr.className="progsplit"; host.appendChild(hr);
+  const head2 = document.createElement("div");
+  head2.className = "pline"; head2.innerHTML =
+    '<span class="ln"></span><span class="code" style="color:var(--ink-3)"><span class="bar">PATH</span>(⟨G,s,t⟩)</span>';
+  host.appendChild(head2);
+  DRIVER.forEach(l=>add(l,true));
+}
+
+function nodePos(i,n){
+  const cx=160, cy=118, R=88;
+  const th = -Math.PI/2 + 2*Math.PI*i/n;
+  return [cx + R*Math.cos(th), cy + R*Math.sin(th)];
+}
+let selNode = null;
+function buildGraph(step){
+  const svg = $("svg");
+  const s = step ? step.st : null;
+  const n = G.n;
+  const gone = s && s.deleted!=null ? s.deleted : null;
+  const parts = [];
+  parts.push(`<defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="var(--edge)"/></marker>
+    <marker id="ahv" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="var(--violet)"/></marker>
+    <marker id="aha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="var(--amber-line)"/></marker>
+  </defs>`);
+
+  const optEdges = new Set();
+  if(step && step.options && step.probeRow!=null)
+    for(const w of step.options) if(w!==STOP) optEdges.add(key(step.probeRow,w));
+  const taken = step && step.takenEdge ? key(step.takenEdge[0], step.takenEdge[1]) : null;
+  const probe = step && step.probe ? key(step.probe[0], step.probe[1]) : null;
+
+  for(const [ab] of Array.from(G.E).map(x=>[x])){
+    const [a,b] = ab.split(",").map(Number);
+    if(a>=n||b>=n) continue;
+    const [x1,y1] = nodePos(a,n), [x2,y2] = nodePos(b,n);
+    const dx=x2-x1, dy=y2-y1, L=Math.hypot(dx,dy)||1;
+    const bend = hasE(b,a) ? 13 : 0;
+    const nx=-dy/L, ny=dx/L;
+    const mx=(x1+x2)/2 + nx*bend, my=(y1+y2)/2 + ny*bend;
+    const r=17;
+    const t1 = pointOnQuad(x1,y1,mx,my,x2,y2, r/L*0.92);
+    const t2 = pointOnQuad(x2,y2,mx,my,x1,y1, (r+7)/L*0.92);
+    let cls = "gedge";
+    if(gone!=null && (a===gone||b===gone)) cls += " dim";
+    if(key(a,b)===taken) cls += " taken";
+    else if(optEdges.has(key(a,b))) cls += " opt";
+    else if(key(a,b)===probe) cls += " probe";
+    const mk = cls.includes("taken")||cls.includes("opt") ? "ahv" : cls.includes("probe") ? "aha" : "ah";
+    parts.push(`<path class="${cls}" marker-end="url(#${mk})" d="M${t1[0].toFixed(1)},${t1[1].toFixed(1)} Q${mx.toFixed(1)},${my.toFixed(1)} ${t2[0].toFixed(1)},${t2[1].toFixed(1)}"/>`);
+  }
+
+  for(let i=0;i<n;i++){
+    const [x,y] = nodePos(i,n);
+    let c = "gv-circle";
+    if(gone!=null && i===gone) c += " deleted";
+    if(s){
+      if(s.counted && s.counted.includes(i)) c += " counted";
+      if(s.cur===i && s.walk && s.walk.length) c += " cur";
+      if(s.v===i) c += " isv";
+      if(s.u===i && s.cur!==i) c += " isu";
+    }
+    if(selNode===i) c += " sel";
+    const tag = i===G.s ? "s" : i===G.t ? "t" : "";
+    parts.push(`<g class="gnode" data-v="${i}" tabindex="0" role="button" aria-label="vertex ${i}">
+      <circle class="${c}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="17"/>
+      <text class="gv-label" x="${x.toFixed(1)}" y="${(y+5).toFixed(1)}" text-anchor="middle">${i}</text>
+      ${tag?`<text class="gv-tag" x="${x.toFixed(1)}" y="${(y+31).toFixed(1)}" text-anchor="middle">${tag}</text>`:""}
+    </g>`);
+  }
+  svg.innerHTML = parts.join("");
+}
+function pointOnQuad(x1,y1,cx,cy,x2,y2,tfrac){
+  const t = Math.min(.45, Math.max(.06, tfrac));
+  const mt = 1-t;
+  return [mt*mt*x1 + 2*mt*t*cx + t*t*x2, mt*mt*y1 + 2*mt*t*cy + t*t*y2];
+}
+
+function buildMatrix(){
+  const host = $("matrix"); const n = G.n;
+  host.style.gridTemplateColumns = `repeat(${n+1}, auto)`;
+  const cells = [`<div class="mcell hdr"></div>`];
+  for(let j=0;j<n;j++) cells.push(`<div class="mcell hdr">${j}</div>`);
+  for(let i=0;i<n;i++){
+    cells.push(`<div class="mcell hdr">${i}</div>`);
+    for(let j=0;j<n;j++){
+      const on = hasE(i,j);
+      cells.push(`<div class="mcell ${on?"one":""}" data-r="${i}" data-c="${j}">${on?1:0}</div>`);
+    }
+  }
+  host.innerHTML = cells.join("");
+}
+function markMatrix(step){
+  const host = $("matrix");
+  host.querySelectorAll(".mcell.probe, .mcell.rowprobe").forEach(e=>e.classList.remove("probe","rowprobe"));
+  if(!step) return;
+  if(step.probeRow!=null)
+    host.querySelectorAll(`.mcell[data-r="${step.probeRow}"]`).forEach(e=>e.classList.add("rowprobe"));
+  if(step.probe){
+    const e = host.querySelector(`.mcell[data-r="${step.probe[0]}"][data-c="${step.probe[1]}"]`);
+    if(e) e.classList.add("probe");
+  }
+}
+
+function buildLayerTable(){
+  const t = $("layers"); const n = G.n;
+  let h = `<thead><tr><th>k</th><th>Cₖ &nbsp;(G)</th><th>Cₖ &nbsp;(G−t)</th></tr></thead><tbody>`;
+  for(let k=0;k<=n;k++)
+    h += `<tr data-k="${k}"><td>${k}</td><td class="ca pend">·</td><td class="cb pend">·</td></tr>`;
+  h += `</tbody>`;
+  t.innerHTML = h;
+}
+function fillLayerTable(s){
+  const t = $("layers");
+  t.querySelectorAll("tbody tr").forEach((tr,k)=>{
+    const a = tr.querySelector(".ca"), b = tr.querySelector(".cb");
+    const va = s && s.layersA[k], vb = s && s.layersB[k];
+    a.textContent = va==null ? "·" : va; a.classList.toggle("pend", va==null);
+    b.textContent = vb==null ? "·" : vb; b.classList.toggle("pend", vb==null);
+    const live = s && s.k!=null && ((s.phase==="A" && s.layersA.length===k+1) || (s.phase==="B" && s.layersB.length===k+1));
+    tr.classList.toggle("now", !!live);
+  });
+}
+
+const REGS = [
+  ["k","k"], ["C","C"], ["C⁺","Cp"], ["D","D"],
+  ["v","v"], ["u","u"], ["cur","cur"], ["i","i"],
+  ["R","R"], ["R′","Rp"],
+];
+function bitsFor(val, w){
+  const v = (val==null||val<0) ? null : val;
+  let out = "";
+  for(let b=w-1;b>=0;b--){
+    const bit = v==null ? "·" : ((v>>b)&1);
+    out += `<span class="bit ${bit===1?"one":""}">${bit}</span>`;
+  }
+  return out;
+}
+function renderRegs(step){
+  const s = step ? step.st : {};
+  const n = G.n;
+  const w = Math.max(1, Math.ceil(Math.log2(n+1)));
+  const hotLine = step ? String(step.line) : "";
+  const hotOf = {"1":["C"],"3":["Cp"],"5":["D"],"7":["cur","i"],"9":["cur"],"10":["i"],
+                 "12":["D"],"14":["D","C"],"15":["Cp"],"16":["C"],"2":["k"],"4":["v"],"6":["u"]};
+  const hot = new Set(hotOf[hotLine]||[]);
+  let h = "";
+  for(const [label,f] of REGS){
+    const val = s[f];
+    h += `<div class="reg ${hot.has(f)?"hot":""}"><span class="rn">${label}</span>`
+       + `<span class="rv">${val==null?"—":val}</span><span class="bits">${bitsFor(val,w)}</span></div>`;
+  }
+  h += `<div class="reg ${hot.has("cert")?"hot":""}"><span class="rn">cert</span>`
+     + `<span class="rv">${s.cert==null?"—":(s.cert?"T":"F")}</span>`
+     + `<span class="bits">${s.cert==null?'<span class="bit">·</span>':`<span class="bit ${s.cert?"one":""}">${s.cert?1:0}</span>`}</span></div>`;
+  h += `<div class="reg"><span class="rn">phase</span>`
+     + `<span class="rv">${s.phase||"—"}</span>`
+     + `<span class="bits">${s.phase==null?'<span class="bit">·</span>':`<span class="bit ${s.phase==="B"?"one":""}">${s.phase==="B"?1:0}</span>`}</span></div>`;
+  $("regs").innerHTML = h;
+
+  /* the tape as one contiguous strip */
+  let strip = "";
+  for(const [,f] of REGS) strip += bitsFor(s[f], w);
+  strip += `<span class="bit ${s.cert?"one":""}">${s.cert==null?"·":(s.cert?1:0)}</span>`;
+  strip += `<span class="bit ${s.phase==="B"?"one":""}">${s.phase==null?"·":(s.phase==="B"?1:0)}</span>`;
+  $("strip").innerHTML = strip;
+
+  const total = REGS.length*w + 2;
+  const inputBits = n*n + 2*Math.ceil(Math.log2(Math.max(2,n)));
+  const big = 1000, bigW = Math.ceil(Math.log2(big+1));
+  $("acct").innerHTML =
+     `<b>${REGS.length} counters × ${w} bits + 2 flags = ${total} bits</b> of work tape for n = ${n}. `
+   + `The input — the ${n}×${n} adjacency matrix plus s and t — is about ${inputBits} bits and is read-only.<br>`
+   + `The counter count never grows with n, so at n = ${big} the work tape is still only `
+   + `<b>${REGS.length*bigW+2} bits</b> against an input of roughly ${big*big/1000|0}k bits. That is what O(log n) space means.`;
+  $("tape-note").textContent = `${total} bits · O(log n)`;
+}
+
+function renderWalk(step){
+  const host = $("walk"); host.textContent="";
+  const s = step ? step.st : null;
+  if(!s || !s.walk || !s.walk.length){
+    host.innerHTML = `<span class="hint">no walk in progress</span>`;
+    return;
+  }
+  const frag = [];
+  s.walk.forEach((x,idx)=>{
+    if(idx) frag.push(`<span class="arrow">→</span>`);
+    frag.push(`<span class="chip ${idx===s.walk.length-1?"head":""}">${x}</span>`);
+  });
+  if(s.goal!=null && s.cur!==s.goal){
+    frag.push(`<span class="arrow">⇢</span><span class="chip goal">u=${s.goal}</span>`);
+  }
+  frag.push(`<span class="budget">i = ${s.i} / k = ${s.k}${s.goal!=null?` · target u = ${s.goal}`:""}</span>`);
+  host.innerHTML = frag.join("");
+}
+
+function renderChoice(){
+  const host = $("choicehost"); host.textContent="";
+  if(!sim.pending || view < sim.trace.length-1) return;
+  const y = sim.pending;
+  const succ = y.options.filter(w=>w!==STOP);
+  const box = document.createElement("div");
+  box.className = "choicebox";
+  box.innerHTML = `<div class="ct">★ branch point — pick the next vertex</div>
+    <div class="hint" style="margin-bottom:8px">
+      at ${y.cur}, ${y.rem} step${y.rem===1?"":"s"} of budget left, trying to reach u = ${y.goal}.
+    </div><div class="opts"></div>`;
+  const opts = box.querySelector(".opts");
+  for(const w of succ){
+    const b = document.createElement("button");
+    b.textContent = "→ " + w;
+    b.onclick = ()=>answerPending(w);
+    opts.appendChild(b);
+  }
+  const b = document.createElement("button");
+  b.textContent = succ.length ? "end the walk here" : "no successors — end the walk";
+  b.onclick = ()=>answerPending(STOP);
+  opts.appendChild(b);
+  host.appendChild(box);
+}
+
+function renderBranch(step){
+  const host = $("branchbox");
+  const s = step ? step.st : null;
+  const nGuess = step ? step.gi : 0;
+  const tail = sim.guesses.slice(Math.max(0, nGuess-14), nGuess)
+    .map(w=>`<span class="chip" style="height:20px;min-width:20px;font-size:11px">${w===STOP?"⊣":w}</span>`).join("");
+  let status;
+  if(!s) status = `<span class="hint">not started</span>`;
+  else if(s.verdict==="kill") status = `<span style="color:var(--red);font-weight:600">killed at line 14 — D &lt; C</span>`;
+  else if(s.verdict==="accept") status = `<span style="color:var(--green);font-weight:600">accepting branch</span>`;
+  else if(s.verdict==="reject") status = `<span style="color:var(--red);font-weight:600">rejecting branch</span>`;
+  else status = `<span style="color:var(--amber);font-weight:600">alive</span>`;
+  host.innerHTML =
+    `<div style="display:flex;gap:10px;align-items:baseline;margin-bottom:8px">
+       <span class="hint">status</span> ${status}
+     </div>
+     <div class="hint" style="margin-bottom:5px">${nGuess} guess${nGuess===1?"":"es"} made — the last few (⊣ = the walk was ended):</div>
+     <div class="walkrow">${tail || '<span class="hint">none yet</span>'}</div>`;
+  $("branch-note").textContent = document.getElementById("sel-mode").selectedOptions[0].textContent;
+}
+
+let sizeCache = {len:-1, guesses:0};
+function updateSizeHint(){
+  if(sizeCache.len !== sim.trace.length)
+    sizeCache = {len:sim.trace.length, guesses:sim.trace.filter(x=>x.kind==="guess").length};
+  $("sizehint").textContent =
+      `n = ${G.n} — this run is ${sim.trace.length} configuration${sim.trace.length===1?"":"s"}`
+    + `${sim.done?"":" so far"}, with ${sizeCache.guesses} branch point${sizeCache.guesses===1?"":"s"}. `
+    + `The cost grows like n⁴, so 3 vertices is a few hundred steps and 5 is already a few thousand.`;
+  $("b-addv").disabled = G.n >= 7;
+  $("b-delv").disabled = G.n <= 2;
+}
+
+let logBuilt = 0;
+function renderLog(reset){
+  const host = $("log");
+  if(reset){ host.textContent=""; logBuilt = 0; }
+  for(let i=logBuilt; i<sim.trace.length; i++){
+    const s = sim.trace[i];
+    const row = document.createElement("div");
+    row.className = "logrow k-"+s.kind;
+    row.dataset.i = i;
+    row.innerHTML = `<span class="li">${i}</span><span class="ll">${s.line}</span><span class="lm"></span>`;
+    row.querySelector(".lm").textContent = s.msg;
+    host.appendChild(row);
+  }
+  logBuilt = sim.trace.length;
+}
+function markLog(){
+  const host = $("log");
+  const prev = host.querySelector(".logrow.on");
+  if(prev) prev.classList.remove("on");
+  const cur = host.querySelector(`.logrow[data-i="${view}"]`);
+  if(cur){
+    cur.classList.add("on");
+    const top = cur.offsetTop - host.clientHeight/2 + cur.clientHeight/2;
+    host.scrollTop = Math.max(0, top);
+  }
+}
+
+function render(){
+  ensure(view);
+  if(view >= sim.trace.length) view = Math.max(0, sim.trace.length-1);
+  const step = sim.trace[view] || null;
+
+  document.querySelectorAll(".pline").forEach(e=>{
+    e.classList.toggle("on", step && e.dataset.line === String(step.line));
+  });
+  $("pc-note").textContent = step ? `line ${step.line}` : "program counter";
+
+  buildGraph(step);
+  markMatrix(step);
+  renderRegs(step);
+  renderWalk(step);
+  fillLayerTable(step ? step.st : null);
+  renderBranch(step);
+  renderChoice();
+  updateSizeHint();
+  renderLog(false);
+  markLog();
+
+  const sc = $("scrub");
+  sc.max = Math.max(0, sim.trace.length-1);
+  sc.value = view;
+  $("stepno").textContent = `${view} / ${Math.max(0,sim.trace.length-1)}${sim.done?"":(sim.pending?" · waiting":" +")}`;
+
+  const s = step ? step.st : null;
+  const v = $("verdict");
+  v.className = "verdict";
+  if(!s){ v.textContent = "idle"; }
+  else if(s.verdict==="accept"){ v.classList.add("accept"); v.textContent = "accept · no s⇝t path"; }
+  else if(s.verdict==="reject"){ v.classList.add("reject"); v.textContent = "reject · s⇝t exists"; }
+  else if(s.verdict==="kill"){ v.classList.add("reject"); v.textContent = "branch killed"; }
+  else { v.classList.add("live"); v.textContent = `phase ${s.phase} · branch alive`; }
+
+  $("graph-note").textContent = s && s.deleted!=null ? `phase B — vertex ${s.deleted} deleted` : "phase A — G as given";
+  $("b-back").disabled = view<=0;
+  $("b-fwd").disabled = sim.done && view>=sim.trace.length-1;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CONTROLS
+   ═══════════════════════════════════════════════════════════════════ */
+function stepFwd(){
+  ensure(view+1);
+  if(view+1 < sim.trace.length){ view++; render(); return true; }
+  render();
+  return false;
+}
+function stepBack(){ if(view>0){ view--; render(); } }
+function play(){
+  if(timer) return stop();
+  $("b-play").textContent = "⏸ pause";
+  const ms = +$("sel-speed").value;
+  timer = setInterval(()=>{ if(!stepFwd()) stop(); }, ms);
+}
+function stop(){
+  if(timer) clearInterval(timer);
+  timer = null;
+  const b = $("b-play"); if(b) b.innerHTML = "▶&nbsp;run";
+}
+function toEnd(){
+  stop();
+  pump();
+  view = sim.trace.length-1;
+  render();
+}
+function jump(pred){
+  stop();
+  for(let i=view+1;;i++){
+    ensure(i);
+    if(i>=sim.trace.length) break;
+    if(pred(sim.trace[i])){ view=i; render(); return; }
+  }
+  render();
+}
+
+function buildSelectors(){
+  const ss=$("sel-s"), st=$("sel-t");
+  const opts = allV().map(i=>`<option value="${i}">${i}</option>`).join("");
+  ss.innerHTML=opts; st.innerHTML=opts;
+  ss.value=G.s; st.value=G.t;
+}
+
+function wire(){
+  $("b-fwd").onclick = ()=>{stop(); stepFwd();};
+  $("b-back").onclick = ()=>{stop(); stepBack();};
+  $("b-play").onclick = play;
+  $("b-reset").onclick = ()=>{ stop(); view=0; render(); };
+  $("b-end").onclick = toEnd;
+  $("sel-speed").onchange = ()=>{ if(timer){ stop(); play(); } };
+  $("sel-mode").onchange = rebuild;
+  $("scrub").oninput = e => { stop(); view = +e.target.value; render(); };
+
+  $("j-guess").onclick = ()=>jump(s=>s.kind==="guess");
+  $("j-k").onclick     = ()=>jump(s=>s.kind==="layer"||s.kind==="phase");
+  $("j-v").onclick     = ()=>jump(s=>s.kind==="cand");
+  $("j-kill").onclick  = ()=>jump(s=>s.kind==="reject");
+
+  $("log").addEventListener("click", e=>{
+    const row = e.target.closest(".logrow");
+    if(!row) return;
+    stop(); view = +row.dataset.i; render();
+  });
+
+  $("svg").addEventListener("click", e=>{
+    const g = e.target.closest(".gnode");
+    if(!g) return;
+    toggleVertex(+g.dataset.v);
+  });
+  $("svg").addEventListener("keydown", e=>{
+    const g = e.target.closest(".gnode");
+    if(g && (e.key==="Enter"||e.key===" ")){ e.preventDefault(); toggleVertex(+g.dataset.v); }
+  });
+
+  $("sel-s").onchange = e => {
+    const nv=+e.target.value;
+    if(nv===G.t){ G.t=G.s; }
+    G.s=nv; buildSelectors(); rebuild();
+  };
+  $("sel-t").onchange = e => {
+    const nv=+e.target.value;
+    if(nv===G.s){ G.s=G.t; }
+    G.t=nv; buildSelectors(); rebuild();
+  };
+  $("b-addv").onclick = ()=>{
+    if(G.n>=7) return;
+    G.n++; selNode=null; buildSelectors(); rebuild();
+  };
+  $("b-delv").onclick = ()=>{
+    if(G.n<=2) return;
+    const gone=G.n-1;
+    G.E = new Set(Array.from(G.E).filter(k=>{
+      const [a,b]=k.split(",").map(Number); return a!==gone && b!==gone;
+    }));
+    G.n--;
+    if(G.s>=G.n) G.s=0;
+    if(G.t>=G.n) G.t=G.n-1;
+    if(G.s===G.t) G.s = (G.t+1)%G.n;
+    selNode=null; buildSelectors(); rebuild();
+  };
+  const ph = $("presets");
+  PRESETS.forEach((p,i)=>{
+    const b = document.createElement("button");
+    b.textContent = p.name;
+    b.onclick = ()=>{ loadPreset(i); selNode=null; buildSelectors(); rebuild(); };
+    ph.appendChild(b);
+  });
+
+  document.addEventListener("keydown", e=>{
+    if(e.target.matches("input,select,button")) return;
+    if(e.key==="ArrowRight"){ e.preventDefault(); stop(); stepFwd(); }
+    else if(e.key==="ArrowLeft"){ e.preventDefault(); stop(); stepBack(); }
+    else if(e.key===" "){ e.preventDefault(); play(); }
+    else if(e.key==="r"||e.key==="R"){ stop(); view=0; render(); }
+    else if(e.key==="e"||e.key==="E"){ toEnd(); }
+  });
+}
+function toggleVertex(i){
+  if(selNode===null){ selNode=i; buildGraph(sim.trace[view]||null); return; }
+  if(selNode===i){ selNode=null; buildGraph(sim.trace[view]||null); return; }
+  const k = key(selNode,i);
+  if(G.E.has(k)) G.E.delete(k); else G.E.add(k);
+  selNode=null;
+  rebuild();
+}
+
+/* ═══════════════════════════════════════════════════════════════════ */
+loadPreset(0);
+buildProgram();
+buildSelectors();
+wire();
+rebuild();
+</script>
+
+</body>
+</html>
