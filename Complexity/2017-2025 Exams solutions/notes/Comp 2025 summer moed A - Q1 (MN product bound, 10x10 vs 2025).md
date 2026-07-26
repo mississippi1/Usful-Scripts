@@ -39,6 +39,42 @@ for MN(L1) = MN(L2) = 10 and MN(L1 ∩ L2) = 2025 to hold simultaneously, for AN
 L1, L2 — the lemma is unconditional (no regularity or other structural assumption needed).
 **The claim is false.** ∎
 
+## Alternate proof of the lemma — logical clauses only, no map/image/surjection
+
+Same lemma, same conclusion, but built purely from the ≡_L definition and a
+pigeonhole-by-contradiction instead of a pair-map + surjection.
+
+Since ≡_{L1} partitions Σ* into m = MN(L1) classes, label them C_1,…,C_m (every w ∈ Σ*
+lies in exactly one C_i, and u ≡_{L1} v iff u, v share a C_i). Likewise label the m' = MN(L2)
+classes of ≡_{L2} as D_1,…,D_{m'}.
+
+**Step 1 (key implication, a chain of biconditionals).** If u, v ∈ Σ* lie in a common C_i
+and a common D_j (i.e. u ≡_{L1} v and u ≡_{L2} v), then u ≡_{L1∩L2} v.
+
+Proof: by hypothesis ∀z ∈ Σ*: (uz∈L1 ⟺ vz∈L1) and ∀z ∈ Σ*: (uz∈L2 ⟺ vz∈L2). Fix an
+arbitrary z ∈ Σ*:
+
+    uz ∈ L1 ∩ L2
+     ⟺ uz ∈ L1 ∧ uz ∈ L2       (definition of ∩)
+     ⟺ vz ∈ L1 ∧ uz ∈ L2       (instantiate the first hypothesis at this z)
+     ⟺ vz ∈ L1 ∧ vz ∈ L2       (instantiate the second hypothesis at this same z)
+     ⟺ vz ∈ L1 ∩ L2            (definition of ∩)
+
+z was arbitrary, so ∀z: uz ∈ L1∩L2 ⟺ vz ∈ L1∩L2, i.e. u ≡_{L1∩L2} v. ∎ (Nothing but two
+applications of the definition of ≡_L chained through a conjunction — no function is built.)
+
+**Step 2 (pigeonhole by contradiction).** Suppose MN(L1 ∩ L2) ≥ m·m' + 1. Then there are
+m·m'+1 words w_1,…,w_{mm'+1}, one from each of m·m'+1 distinct ≡_{L1∩L2} classes — so they
+are pairwise inequivalent under ≡_{L1∩L2}.
+
+Each w_t lies in exactly one C_i (among m choices) and exactly one D_j (among m' choices),
+so each of the m·m'+1 words falls into one of only m·m' combinations (C_i, D_j). Since
+m·m'+1 > m·m', pigeonhole gives s ≠ t whose words share the same combination: w_s, w_t lie
+in a common C_i and a common D_j. By Step 1, w_s ≡_{L1∩L2} w_t — contradicting that the
+w_t were chosen pairwise inequivalent. So MN(L1 ∩ L2) ≤ m·m'. ∎
+
+Same 100 cap, same 2025 > 100 conclusion — only the packaging differs.
+
 ## Why the bound is tight (so the disproof is really about arithmetic, not structure)
 
 100 is achievable, not merely an upper limit. Over Σ = {a,b}:
@@ -77,3 +113,9 @@ sits far above anything the construction can reach.
   unconditional inequality. Confirmed the bound is tight (not just an upper limit) via a
   two-independent-counters construction, verified by brute force at modulus 3
   (MN(L1)=MN(L2)=3, MN(L1∩L2)=9).
+- **Q1 follow-up** — Asked to redo the lemma's proof "without mapping", using logical
+  clauses/MN definitions instead. Resolved: replaced the pair-map Φ + surjection argument
+  with (1) a direct ⟺-chain from the ≡_L definition showing u,v sharing an L1-class and an
+  L2-class implies u ≡_{L1∩L2} v, and (2) a pigeonhole-by-contradiction over m·m'+1
+  hypothetically-inequivalent words, landing in only m·m' (class,class) combinations. Same
+  bound, same conclusion, purely first-order phrasing.
