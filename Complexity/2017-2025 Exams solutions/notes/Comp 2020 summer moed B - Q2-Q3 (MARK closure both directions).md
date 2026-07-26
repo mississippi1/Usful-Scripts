@@ -1,6 +1,6 @@
-# Comp 2020 summer (קיץ) moed B — Q2 (11 pts, T/F+proof): REG closed under MARK(L)
+# Comp 2020 summer (קיץ) moed B — Q2-Q3 (11 pts each, T/F+proof): REG and MARK(L), both directions
 
-**Question.** For L ⊆ {a,b}*, define
+**Question (Q2).** For L ⊆ {a,b}*, define
 
     MARK(L) = { a·w : w ∈ L and |w| is even } ∪ { b·w : w ∈ L and |w| is odd }
 
@@ -10,6 +10,9 @@ Examples given:
 
 Claim: for every L ⊆ {a,b}*, if L ∈ REG then MARK(L) ∈ REG. Mark correct/incorrect and
 prove.
+
+**Question (Q3, same worksheet, the converse).** Claim: for every L ⊆ {a,b}*, if
+MARK(L) ∈ REG then L ∈ REG. Mark correct/incorrect and prove.
 
 Note: this exam PDF is not present in this repo's "2017-2025 Exams" folder.
 
@@ -76,12 +79,50 @@ up to length 6. Also confirmed MARK({aⁿbⁿ}) = {aⁿ⁺¹bⁿ} for n=0..4 dir
 definition (this L is not itself regular — the example just pins down what the operator
 computes; it is not a counterexample, since the claim only concerns regular L).
 
-## Why the reverse direction isn't the claim
+## Q3 — the converse: MARK(L) ∈ REG ⟹ L ∈ REG — also CORRECT
 
-The construction only used L ∈ REG to get a finite Q; it doesn't lean on any special
-structure of the marking rule. The converse (MARK(L) ∈ REG ⟹ L ∈ REG) also happens to hold
-by a similar per-parity argument, but that's not what was asked — only the forward
-direction (L regular ⟹ MARK(L) regular) is claimed and proven above.
+## The key tool: closure under left quotient by a fixed symbol
+
+**Fact.** If L1 ∈ REG and c ∈ Σ is a fixed symbol, then c⁻¹L1 := {w : c·w ∈ L1} ∈ REG.
+
+Proof: let A = (Q, Σ, δ, q0, F) be a DFA for L1. Build A' = (Q, Σ, δ, δ(q0,c), F) — same
+automaton, only the start state shifted to δ(q0,c). Then for any w:
+
+    w ∈ L(A')  ⟺  δ*(δ(q0,c), w) ∈ F  ⟺  δ*(q0, c·w) ∈ F  ⟺  c·w ∈ L1  ⟺  w ∈ c⁻¹L1
+
+so L(A') = c⁻¹L1, a finite automaton, hence regular. ∎
+
+## The key identity: MARK can be exactly undone
+
+**Claim.** For every L ⊆ {a,b}* (no regularity assumption needed here):
+
+    L  =  a⁻¹MARK(L)  ∪  b⁻¹MARK(L)
+
+Proof: recall MARK(L) = a·(L∩EVEN) ∪ b·(L∩ODD) (the Q2 identity), and the two pieces are
+automatically disjoint by first letter. So a⁻¹MARK(L) = {w : a·w ∈ MARK(L)}: since a word
+starting with a can only come from the first piece (a·(L∩EVEN), never b·(L∩ODD)),
+a·w ∈ MARK(L) ⟺ w ∈ L∩EVEN. So a⁻¹MARK(L) = L∩EVEN exactly. Symmetrically
+b⁻¹MARK(L) = L∩ODD exactly. Therefore:
+
+    a⁻¹MARK(L) ∪ b⁻¹MARK(L) = (L∩EVEN) ∪ (L∩ODD) = L ∩ (EVEN∪ODD) = L ∩ Σ* = L
+
+using that every word's length is either even or odd. ∎ (Verified by brute force: recovered
+L exactly from MARK(L) via this quotient identity on 2000 random finite languages.)
+
+## Closing the Q3 proof
+
+If MARK(L) ∈ REG, then by the quotient fact, a⁻¹MARK(L) and b⁻¹MARK(L) are both regular. By
+the identity, their union IS L. REG is closed under union, so L ∈ REG. ∎
+
+## Why this makes MARK an "iff", and the contrast with squaring
+
+Combined, Q2+Q3 show L ∈ REG ⟺ MARK(L) ∈ REG — regularity of L and of MARK(L) are
+equivalent, stronger than either direction alone. This makes sense structurally: MARK
+doesn't throw away or garble information about L — it tags each word with a marker letter
+determined by a property (|w|'s parity) that is itself always regular, and the tagging is
+invertible by a single fixed-string left quotient. Contrast with an operation like
+w ↦ w#w (squaring): recovering w from the squared form is not a finite-state operation —
+exactly why {w#w} is the classic non-regular example, unlike MARK.
 
 ## Issues log
 
@@ -93,9 +134,16 @@ direction (L regular ⟹ MARK(L) regular) is claimed and proven above.
   both worked examples in the question (including reproducing MARK({a,ab,aba}) exactly via
   a concrete trie-DFA simulation), plus a bounded exhaustive check.
 - **Q2 follow-up** — Asked whether this can also be solved via closure under
-  intersection/union (as Q3/Majority was), instead of a custom automaton. Resolved: yes —
-  MARK(L) = a·(L∩EVEN) ∪ b·(L∩ODD) with EVEN, ODD trivially regular, so the claim follows
-  from REG's closure under intersection, concatenation (with the singleton languages {a},
-  {b}), and union alone, with no automaton construction needed. Verified the identity by
-  brute force on 2000 random finite languages. Kept the explicit automaton as an alternate
-  proof, noting it's just this closure argument unfolded into concrete states.
+  intersection/union (as the Majority question was), instead of a custom automaton.
+  Resolved: yes — MARK(L) = a·(L∩EVEN) ∪ b·(L∩ODD) with EVEN, ODD trivially regular, so the
+  claim follows from REG's closure under intersection, concatenation (with the singleton
+  languages {a}, {b}), and union alone, with no automaton construction needed. Verified the
+  identity by brute force on 2000 random finite languages. Kept the explicit automaton as an
+  alternate proof, noting it's just this closure argument unfolded into concrete states.
+- **Q3** — The converse claim (MARK(L)∈REG ⟹ L∈REG), given without a marked answer.
+  Resolved: also correct, via the exact identity L = a⁻¹MARK(L) ∪ b⁻¹MARK(L) (a set identity
+  true for every L, regularity-independent) plus closure of REG under left quotient by a
+  fixed symbol (shift the DFA's start state along that symbol). So L ∈ REG ⟺ MARK(L) ∈ REG —
+  MARK preserves regularity losslessly in both directions, unlike an operation like
+  w ↦ w#w whose inverse isn't finite-state. Verified the recovery identity by brute force on
+  2000 random finite languages.
