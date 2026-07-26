@@ -15,7 +15,37 @@ Note: this exam PDF is not present in this repo's "2017-2025 Exams" folder.
 
 ## Answer: CORRECT (student's circled "נכונה" is right)
 
-## Proof — explicit product-with-parity automaton
+## Proof — via closure properties alone (intersection, concatenation, union)
+
+No custom automaton needed. Let EVEN = {w : |w| even}, ODD = {w : |w| odd} — both
+trivially regular: EVEN = ((a+b)(a+b))*, ODD = (a+b)((a+b)(a+b))*.
+
+**Identity.**
+
+    MARK(L) = a·(L ∩ EVEN) ∪ b·(L ∩ ODD)
+
+Proof of the identity: a·w ∈ {a·w : w∈L, |w| even} iff w∈L and |w| even, i.e. iff
+w ∈ L∩EVEN — so {a·w : w∈L,|w|even} = a·(L∩EVEN) (prepend a to every word of L∩EVEN).
+Symmetrically {b·w : w∈L,|w|odd} = b·(L∩ODD). Union of the two gives MARK(L). (Verified by
+brute force against 2000 random finite languages — no mismatch.)
+
+**Closing the proof, purely via closure properties:**
+1. EVEN, ODD ∈ REG (explicit regexes above).
+2. L ∈ REG by hypothesis ⟹ L∩EVEN, L∩ODD ∈ REG (REG closed under intersection).
+3. {a}, {b} ∈ REG (finite languages) ⟹ a·(L∩EVEN), b·(L∩ODD) ∈ REG (REG closed under
+   concatenation).
+4. Their union ∈ REG (REG closed under union), and by the identity that union IS MARK(L). ∎
+
+This mirrors how Q3 (Majority) reduces to intersection/union alone — no automaton needs to
+be built by hand; standard closure properties applied to L and two trivially-regular parity
+languages finish the job.
+
+## Alternate proof — explicit product-with-parity automaton
+
+Unfolding the closure-based proof into an explicit automaton (the (q,p,X) state below is
+literally tracking membership in L, parity, and which branch — i.e. the product-with-
+EVEN/ODD structure made concrete) gives the following construction directly, useful if a
+question specifically asks for a DFA rather than a closure argument.
 
 Let A = (Q, {a,b}, δ, q0, F) be a (complete) DFA for L. Build A' = (Q', {a,b}, δ', q0', F'):
 
@@ -62,3 +92,10 @@ direction (L regular ⟹ MARK(L) regular) is claimed and proven above.
   parity matching the marker. |Q'|=1+4|Q| is finite whenever L is regular. Verified against
   both worked examples in the question (including reproducing MARK({a,ab,aba}) exactly via
   a concrete trie-DFA simulation), plus a bounded exhaustive check.
+- **Q2 follow-up** — Asked whether this can also be solved via closure under
+  intersection/union (as Q3/Majority was), instead of a custom automaton. Resolved: yes —
+  MARK(L) = a·(L∩EVEN) ∪ b·(L∩ODD) with EVEN, ODD trivially regular, so the claim follows
+  from REG's closure under intersection, concatenation (with the singleton languages {a},
+  {b}), and union alone, with no automaton construction needed. Verified the identity by
+  brute force on 2000 random finite languages. Kept the explicit automaton as an alternate
+  proof, noting it's just this closure argument unfolded into concrete states.
