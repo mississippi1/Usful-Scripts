@@ -48,6 +48,16 @@ Since ≡_{L1} partitions Σ* into m = MN(L1) classes, label them C_1,…,C_m (e
 lies in exactly one C_i, and u ≡_{L1} v iff u, v share a C_i). Likewise label the m' = MN(L2)
 classes of ≡_{L2} as D_1,…,D_{m'}.
 
+Important: C_1,…,C_m already partition ALL of Σ*, not just the words that happen to be in
+L1 — this is not something that needs separate proof, it's the standard "an equivalence
+relation partitions its whole domain" fact from part (a): reflexivity puts every w ∈ Σ*
+in its own class w ≡_{L1} w, and symmetry+transitivity force any two classes to be equal or
+disjoint. So MN(L1) = m counts classes of words IN L1 and classes of words NOT in L1 alike
+(e.g. for L1 = {ε} over Σ = {a}, MN(L1) = 2: C_1 = {ε} and C_2 = {a,aa,aaa,…}, the latter
+entirely outside L1). Consequently every word w_t below — whether or not it happens to lie
+in L1, L2, or L1 ∩ L2 — automatically falls into exactly one C_i and exactly one D_j; that
+coverage is inherited from "{C_i} is a partition of Σ*", not argued separately here.
+
 **Step 1 (key implication, a chain of biconditionals).** If u, v ∈ Σ* lie in a common C_i
 and a common D_j (i.e. u ≡_{L1} v and u ≡_{L2} v), then u ≡_{L1∩L2} v.
 
@@ -119,3 +129,10 @@ sits far above anything the construction can reach.
   L2-class implies u ≡_{L1∩L2} v, and (2) a pigeonhole-by-contradiction over m·m'+1
   hypothetically-inequivalent words, landing in only m·m' (class,class) combinations. Same
   bound, same conclusion, purely first-order phrasing.
+- **Q1 follow-up #2** — Concern that Step 2's "each w_t lies in exactly one C_i and one D_j"
+  was unproven for words outside the intersection. Resolved: C_1,…,C_m already partition
+  ALL of Σ*, not just words in L1 — a direct consequence of ≡_{L1} being an equivalence
+  relation (reflexivity + symmetry/transitivity, part (a)), not something Step 1 needs to
+  establish. Example added: L1 = {ε} over Σ={a} has MN(L1) = 2, with C_2 = {a,aa,aaa,…}
+  entirely outside L1 — MN classes cover rejected words too, so every w_t automatically
+  falls into some C_i and some D_j regardless of language membership.
