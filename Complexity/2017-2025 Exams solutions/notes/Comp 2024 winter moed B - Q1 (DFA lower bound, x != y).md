@@ -2,6 +2,8 @@
 
 **Question.** For k ∈ ℕ, L_k = { xy : x, y ∈ {0,1}^k and x ≠ y }.
 (a) Show that every DFA deciding L_k must have at least 2^k states.
+(b) Show there is an NFA recognizing L_k with at most 100k² states.
+    (Hint: first present L_k as a union of simpler languages.)
 
 This is the "lower bound for NFA determinization" question: L_k has an NFA with O(k²)
 states, yet every DFA needs ≥ 2^k — so the subset construction's blowup is unavoidable.
@@ -66,14 +68,78 @@ length ≤ k are pairwise distinguishable:
 The true minimal DFA is Θ(2^k). Brute force (Myhill–Nerode over all words of length
 ≤ 2k+1): **5, 12, 25, 50** states for k = 1, 2, 3, 4 (≈ 3·2^k).
 
-### The NFA counterpart (why the question exists)
+## (b) Solution — an NFA with at most 100k² states
 
-NFA with O(k²) states: guess the mismatch position i ∈ [k] and the bit b = w_i, walk k
-more letters, verify w_{k+i} ≠ b, with a position counter enforcing |w| = 2k. Each (i,b)
-branch is a chain of 2k+1 states ⇒ ~2k² states.
+### Step 1: follow the hint — L_k as a union of simple languages
 
-So: an NFA with m = O(k²) states whose minimal DFA needs ≥ 2^k = 2^{Ω(√m)} states.
-Determinization really can cost exponentially many states.
+The split of w ∈ Σ^{2k} into w = xy with |x| = |y| = k is unique, with x_i = w_i and
+y_i = w_{k+i}, so
+
+    w ∈ L_k  ⟺  |w| = 2k  and  ∃ i ∈ [k] : w_i ≠ w_{k+i}.
+
+Over a binary alphabet, w_i ≠ w_{k+i} means (w_i, w_{k+i}) = (b, b̄) for some b ∈ {0,1},
+where b̄ = 1 − b. So define, for i ∈ [k] and b ∈ {0,1}, the 2k "simple" languages
+
+    K_{i,b} = Σ^{i−1} · b · Σ^{k−1} · b̄ · Σ^{k−i}
+
+("length exactly 2k, letter i is b, letter k+i is b̄, everything else free").
+
+**Claim.** L_k = ⋃_{i∈[k]} ⋃_{b∈{0,1}} K_{i,b}.
+
+⊆: let w = xy ∈ L_k with |x| = |y| = k. Equal lengths and x ≠ y ⇒ they differ at some
+position i ∈ [k], i.e. w_i ≠ w_{k+i}. Put b = w_i; then w_{k+i} = b̄ (binary alphabet).
+Splitting w into blocks: i−1 free letters, then b, then (k+i−1) − i = k−1 free letters,
+then b̄, then 2k − (k+i) = k−i free letters ⇒ w ∈ K_{i,b}.
+
+⊇: if w ∈ K_{i,b} then |w| = (i−1) + 1 + (k−1) + 1 + (k−i) = 2k, so w = xy with
+|x| = |y| = k, and w_i = b ≠ b̄ = w_{k+i} means x_i ≠ y_i, hence x ≠ y and w ∈ L_k. ∎
+
+### Step 2: a chain NFA for each K_{i,b}, with 2k+1 states
+
+States s_0, …, s_{2k}; start s_0; single accepting state s_{2k}; transitions
+
+    δ(s_{j−1}, σ) = s_j  for every σ ∈ Σ,  if j ∉ {i, k+i}
+    δ(s_{i−1},   b) = s_i          (only the letter b)
+    δ(s_{k+i−1}, b̄) = s_{k+i}      (only the letter b̄)
+
+and nothing else. A run reaches s_{2k} iff it consumed exactly 2k letters with the pinned
+letters b at level i and b̄ at level k+i, i.e. iff the input is in K_{i,b}. (Each chain is
+deterministic; the nondeterminism enters only in Step 3, as the choice of chain.)
+
+### Step 3: union, and the state count
+
+Build N from the 2k chains, identifying all their start states into one state S and all
+their accepting states into one state A (safe — accepting states have no outgoing edges).
+Internal states s_1, …, s_{2k−1} of the chains stay separate. From S the automaton
+nondeterministically enters any chain — that is the guess of (i, b) — and no
+ε-transitions are needed. Hence L(N) = ⋃_{i,b} K_{i,b} = L_k, with
+
+    |Q| = 1 + 2k·(2k − 1) + 1 = 4k² − 2k + 2 ≤ 4k² ≤ 100k²      for every k ≥ 1.
+
+No optimization is really needed: even the textbook union (fresh start state with
+ε-moves into 2k disjoint chains of 2k+1 states) gives 2k(2k+1) + 1 = 4k² + 2k + 1 ≤ 100k²
+for k ≥ 1 — the constant 100 is deliberately generous.
+
+Machine-verified: the construction accepts exactly L_k for k = 1,2,3,4 with 4, 14, 32, 58
+states (= 4k² − 2k + 2).
+
+Edge case: if ℕ contains 0 then L_0 = ∅ while 100k² = 0 permits no states at all; the
+intended reading is k ≥ 1.
+
+### What (a) and (b) say together
+
+The NFA only has to **guess a witness** — one position i where the halves disagree, plus
+the bit sitting there — and verification is local (two pinned letters + a length count),
+so O(k²) states suffice. A DFA has no witness to guess and by (a) must remember the entire
+first half, needing ≥ 2^k states.
+
+With m = 4k² − 2k + 2 = O(k²) NFA states the minimal DFA needs ≥ 2^k = 2^{Ω(√m)} states:
+determinization is provably exponential in the worst case, so the subset construction's
+2^m upper bound cannot be replaced by any polynomial.
+
+Intuition for why k² and not O(k) (not a proof): a run must know both *where* the guess was
+made (to align position i with position k+i) and *how many letters remain* (to enforce
+|w| = 2k); those two counters are independent, giving a product of two ranges of size ~k.
 
 ## Version 2a — x = y allowed (constraint dropped): A_k = {xy : x,y ∈ Σ^k} = Σ^{2k}
 
@@ -122,15 +188,19 @@ not the answer to (a): the bound is driven entirely by the length-2k layer.
 Fourth combination, for completeness: {xy : x,y ∈ Σ^{≤k}} = Σ^{≤2k}, minimal DFA 2k+2
 states (4, 6, 8 verified) — trivial again.
 
+**Part (b) for M_k:** also O(k²) NFA states — union the construction above with one extra
+chain of 2k states accepting Σ^1 ∪ … ∪ Σ^{2k−1} (all its states after the first are
+accepting), giving 4k² + O(k) states.
+
 ## Summary
 
-| language | words | DFA lower bound | minimal DFA (k = 1..4) |
-|---|---|---|---|
-| L_k = {xy : \|x\|=\|y\|=k, x ≠ y} | ⊆ Σ^{2k} | **2^k** | 5, 12, 25, 50 |
-| E_k = {xx : \|x\|=k} | ⊆ Σ^{2k} | 2^k (also for NFAs) | 5, 11, 23, 47 |
-| {xy : \|x\|=\|y\|=k} = Σ^{2k} | = Σ^{2k} | Θ(k) — collapses | 2k+2 |
-| M_k = {xy : \|x\|,\|y\| ≤ k, x ≠ y} | Σ^{1..2k−1} ∪ L_k | 2^k (unchanged) | 5, 12, 25, 50 |
-| {xy : \|x\|,\|y\| ≤ k} = Σ^{≤2k} | = Σ^{≤2k} | Θ(k) | 2k+2 |
+| language | words | DFA lower bound | minimal DFA (k = 1..4) | NFA |
+|---|---|---|---|---|
+| L_k = {xy : \|x\|=\|y\|=k, x ≠ y} | ⊆ Σ^{2k} | **2^k** | 5, 12, 25, 50 | 4k²−2k+2 ≤ 100k² |
+| E_k = {xx : \|x\|=k} | ⊆ Σ^{2k} | 2^k (also for NFAs) | 5, 11, 23, 47 | ≥ 2^k (fooling set) |
+| {xy : \|x\|=\|y\|=k} = Σ^{2k} | = Σ^{2k} | Θ(k) — collapses | 2k+2 | 2k+1 |
+| M_k = {xy : \|x\|,\|y\| ≤ k, x ≠ y} | Σ^{1..2k−1} ∪ L_k | 2^k (unchanged) | 5, 12, 25, 50 | 4k²+O(k) |
+| {xy : \|x\|,\|y\| ≤ k} = Σ^{≤2k} | = Σ^{≤2k} | Θ(k) | 2k+2 | 2k+1 |
 
 ## Issues log
 
@@ -147,3 +217,12 @@ states (4, 6, 8 verified) — trivial again.
   Σ^{2k} and the bound collapses to 2k+2 states (all of Σ^k becomes equivalent); *requiring*
   x = y gives E_k = {xx}, where 2^k still holds by the same argument and additionally holds
   for NFAs via the fooling set {(x,x)}.
+- **Q1(b)** — Building the ≤ 100k²-state NFA (the hint "present L_k as a union of simpler
+  languages"). Resolved: L_k = ⋃_{i∈[k], b∈{0,1}} K_{i,b} with
+  K_{i,b} = Σ^{i−1} b Σ^{k−1} b̄ Σ^{k−i} (the binary alphabet is what turns "w_i ≠ w_{k+i}"
+  into the two cases (b, b̄)); each K_{i,b} is a 2k+1-state chain, and the union with shared
+  start/accept states gives 4k² − 2k + 2 ≤ 100k² states, no ε-transitions needed.
+  Machine-verified to accept exactly L_k for k = 1..4 (4, 14, 32, 58 states).
+  Takeaway: the NFA guesses a *witness* (where and how the halves differ) and verifies
+  locally; the DFA has nothing to guess and must store the whole first half — hence
+  2^k vs O(k²), i.e. determinization is exponential in the worst case.
