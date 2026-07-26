@@ -63,6 +63,40 @@ semi-decide it (run forever if w∉L), but a mapping-reduction function g must b
 breaks the construction — and the counterexample shows the gap is real, not just a
 limitation of this specific proof attempt.
 
+## Follow-up — what if the "f(L)≠Σ*" hypothesis were dropped?
+
+The claim breaks even harder, and even for the L∈R version, for a reason that has nothing
+to do with decidability at all.
+
+**General fact.** A ≤_m B means: computable g with w∈A ⟺ g(w)∈B. If B = Σ*, then g(w)∈Σ* is
+tautologically true for every w (just the definition of g's codomain — it carries zero
+information). So A ≤_m Σ* forces w∈A ⟺ TRUE for every w, i.e. A = Σ* exactly. No wiggle
+room: if A misses even one string, the reduction is impossible. (Symmetrically, A ≤_m ∅
+forces A = ∅.) Σ* and ∅ are the two "trivial" targets in reduction theory for exactly this
+reason.
+
+**Concrete counterexample, even for L∈R.** Let Σ={0,1}, L = 0* = {ε,0,00,000,…} — clearly
+decidable (L∈R, regular even). Let e:ℕ→Σ* be the standard enumeration of Σ*
+(e(0)=ε, e(1)=0, e(2)=1, e(3)=00, …, a computable bijection). Define:
+
+    f(0^n) = e(n)     for w = 0^n ∈ L
+    f(w)   = ε        for any w ∉ 0*  (arbitrary elsewhere)
+
+f is computable (checking w∈0* is decidable). Since e is a bijection onto Σ*,
+f(L) = f(0*) = {e(n) : n≥0} = Σ* — the full language. But L = 0* ≠ Σ* (e.g. "1"∉L).
+
+So even though L∈R (which should otherwise guarantee L≤_m f(L) by the construction in the
+previous section), f(L)=Σ* now, and by the general fact above L≤_mΣ* is impossible unless
+L=Σ*, which it isn't. The earlier proof doesn't even get started: there is no z0∉f(L) to
+divert rejected inputs to, since f(L) is everything.
+
+**Takeaway.** f(L)≠Σ* isn't a patch for one corner case of the RE counterexample — it's
+load-bearing for the whole problem, R version included. Dropping it kills the claim for a
+reason that has nothing to do with the RE/R distinction: Σ* is simply an information-free
+reduction target. That's exactly why the exam bakes this hypothesis into the statement
+rather than leaving it implicit — it isolates the genuinely interesting question (does L's
+decidability status matter?) from this much more basic obstruction.
+
 ## Issues log
 
 - **Q6** — Screenshot showed "L∈RE" as the hypothesis with "נכונה" (correct) circled.
@@ -74,3 +108,10 @@ limitation of this specific proof attempt.
   A_TM∉R. Also worked out why the same claim IS true if the hypothesis were L∈R instead
   (decide membership, then route through f(w) or a fixed non-image witness z0), to pin down
   exactly which step of that construction needs decidability and fails for merely-RE L.
+- **Q6 follow-up** — Asked what changes if f(L) were allowed to equal Σ*. Resolved: the
+  claim breaks even for L∈R, for a reason unrelated to decidability — A≤_mΣ* forces A=Σ*
+  exactly (g(w)∈Σ* is tautological, carries no information), so any f achieving f(L)=Σ*
+  with L≠Σ* is an immediate counterexample regardless of L's class. Concrete instance:
+  L=0*∈R, f a bijection from 0* onto Σ* via the standard enumeration (elsewhere arbitrary),
+  giving f(L)=Σ*≠L. Confirms f(L)≠Σ* is load-bearing for the whole problem, not just a
+  patch for the RE counterexample.
