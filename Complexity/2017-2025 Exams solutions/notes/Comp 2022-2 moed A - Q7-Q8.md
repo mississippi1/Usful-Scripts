@@ -168,3 +168,14 @@ Track here which parts gave trouble, and how they were resolved.
   comparison table live in `Comp 2023-2 moed A - Q8.md`. Keep the pair together when revising: the
   deciding word is **"distance"** (a minimum over paths ⟹ a lower bound on it is universal ⟹ NL)
   versus **"contains a simple path"** (existential over an object needing a distinctness check ⟹ NP).
+
+- **Q8 (follow-up — "what is LargeCycle?"):** Definition restated: ⟨G,x⟩ with G **undirected**, and G
+  must contain a **simple cycle** through the designated vertex x covering at least |V(G)|/2 distinct
+  vertices. Class: **NP-complete** — certificate is the cycle (checked in poly *time*, which is what
+  permits the distinctness test); hardness by HAM-CYCLE ≤p LargeCycle with the isolated-twin doubling
+  gadget, so |V'|/2 = |V| forces the cycle to cover all of V. Framing that makes it stick: this is the
+  **NP twin of Q7's LongPath on the same page**, and the sole distinguishing feature is whether the
+  witness must certify **distinctness** — LongPath needs only a walk (current vertex + counter,
+  O(log n) ⟹ NL), while LargeCycle needs the seen-set (Θ(|V|) bits ⟹ NP). Padding parallel noted with
+  `Comp 2025 summer moed A - Q9 (half-Hamiltonian path).md`: isolated padding converts "cover
+  everything" into "cover a fraction", for cycles here and for paths there.
