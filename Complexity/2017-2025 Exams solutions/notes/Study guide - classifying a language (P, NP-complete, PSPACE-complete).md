@@ -107,6 +107,14 @@ Express the language as x ∈ L ⟺ ∃y (…) or ∀y (…), then ask:
   **from** a known-hard problem (known-hard ≤p yours — direction matters).
 - **Sounding hard ≠ being hard.** {⟨G,k⟩ : k > |V(G)|} mentions all the right nouns and is trivially
   in P.
+- **The language's *name* is not evidence — read the definition.** "**distance** from s to t is at
+  least k" means *no short path exists* (a ∀ condition, **NL**-complete via NL = coNL), while "there
+  **exists** a simple path of length ≥ k" is the Hamiltonian family (**NP**-complete). Comp 2022-2
+  moed A calls the first one *LongPath* and it is NL-complete; Q8 of the same exam, *LargeCycle*, is
+  genuinely NP-complete because its certificate must prove all vertices **distinct**.
+- **Check your answer against your own membership proof.** If you can put L in NL (or P), then
+  marking it NP-complete asserts P = NP. A class marking that contradicts a membership argument you
+  can produce yourself is self-refuting.
 - **Reduction direction generally.** A ≤p B means *A is no harder than B*: reducing an easy language
   into a hard one is free and proves nothing about hardness.
 

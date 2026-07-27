@@ -142,3 +142,22 @@ Track here which parts gave trouble, and how they were resolved.
   in poly time), NP-hard via HamCycle ≤p LargeCycle using the isolated-twin vertex-doubling gadget so
   that |V'|/2 = |V| forces the large cycle to be Hamiltonian. General rule captured: "simple
   path/cycle over many distinct vertices" ⇒ Hamiltonian-family ⇒ NP, not NL.
+
+- **Q7 (answer sheet circled NP-Complete):** The marking is **wrong** — the answer is
+  **NL-Complete**, as derived above. Root cause of the error identified: reading the language by its
+  **name** rather than its definition. "**distance** from s to t is at least k" means the *shortest*
+  path is long, i.e. **no s→t path of length < k exists** — a **universal** condition — whereas the
+  name "LongPath" suggests the existential "there is a simple path of length ≥ k", which is the
+  Hamiltonian family and would indeed be NP-complete (cf. `Comp 2025 summer moed A - Q9
+  (half-Hamiltonian path).md`). One word, two classes:
+  | reading | shape | class |
+  |---|---|---|
+  | dist(s,t) ≥ k — no short path exists (the real definition) | ∀ | NL-complete |
+  | ∃ simple path of length ≥ k (what the name hints at) | ∃ + global distinctness | NP-complete |
+  Structural sanity check to apply next time: LongPath ∈ NL ⊆ P, so it **cannot** be NP-complete
+  unless P = NP — a class marking that contradicts a membership proof you can produce yourself is
+  self-refuting. Also re-confirmed: the counter in the complement's NL machine stays O(log n) even
+  when k is written in **binary**, since it is capped at min(k−1, |V|−1) (shortest paths are simple),
+  and that NL = coNL (Immerman–Szelepcsényi) is genuinely load-bearing here, not decorative.
+  Contrast within this same exam: Q8 (LargeCycle) *is* NP-complete, because there the certificate must
+  prove all vertices are **distinct**, which log space cannot do.
