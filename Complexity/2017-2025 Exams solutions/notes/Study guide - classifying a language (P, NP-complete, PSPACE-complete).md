@@ -110,6 +110,56 @@ Express the language as x ∈ L ⟺ ∃y (…) or ∀y (…), then ask:
 - **Reduction direction generally.** A ≤p B means *A is no harder than B*: reducing an easy language
   into a hard one is free and proves nothing about hardness.
 
+## Why "short is easy, long is hard" — and why min-vs-max is the wrong axis
+
+A frequent misreading of the contrast-pair table is "minimisation is easy, maximisation is hard".
+**False:** max-flow, maximum matching and maximum spanning tree are all in P, while TSP is a
+*minimisation* and NP-hard. The real axis is different.
+
+**Minimising makes "simple" free; maximising makes it binding.** Both shortest and longest path are
+really "find a **simple** path", and the difference is who enforces simplicity:
+
+- **Shortest path:** the constraint enforces itself. A walk that repeats a vertex contains a cycle,
+  and deleting the cycle gives a *shorter* walk — so the optimum is automatically simple. BFS/Dijkstra
+  may roam freely over walks, an unconstrained and well-behaved space.
+- **Longest path:** the constraint fights the objective. Repetition makes a walk *longer*, so without
+  simplicity the answer is infinite. Every step must remember which vertices are already used — that
+  memory is the 2ⁿ DP state.
+
+**One line: shortest path is easy because "simple" is not a constraint there; longest path is hard
+because "simple" is the whole problem.**
+
+Three tests confirming it is the constraint and not the direction:
+
+1. **Longest path in a DAG is in P** — same maximisation, but acyclicity makes repetition impossible,
+   so the constraint is free again.
+2. **Longest *walk* is trivial** — drop simplicity and the problem collapses. All difficulty lived in
+   that one word.
+3. **Shortest *simple* path with negative cycles is NP-hard** (reduction from HAM-PATH). Minimisation
+   no longer self-enforces simplicity once repeating can be profitable, and the minimisation problem
+   immediately becomes as hard as the maximisation one.
+
+Why the algorithms then break:
+
+- **Optimal substructure dies.** Dijkstra works because every sub-path of a shortest path is shortest,
+  so one number d(v) summarises all history at v. For longest simple paths, whether a prefix is good
+  depends on **which vertices it burned** — two equal-length prefixes are not interchangeable, so the
+  state cannot compress from a *set* to a *number*: n states become 2ⁿ.
+- **Local optimality certificates die.** Shortest path has a dual proof of optimality — potentials d
+  with d(u) + w(u,v) ≥ d(v) on every edge (LP duality) — verifiable by checking m inequalities, no
+  search. Longest simple path has no known local certificate; proving *no* longer path exists is
+  coNP-hard. A problem tends to be in P when **both** "there is one" and "there is none" have short
+  proofs; long-path has only the first.
+
+Higher-level frame: min-cut is easy and max-cut is hard because cut capacity is **submodular**, and
+submodular *minimisation* is polynomial while submodular *maximisation* is NP-hard. Similarly, greedy
+works exactly on structures with a matroid exchange property.
+
+Finally, do not over-apply the rule — **"long" is not always hard**: longest increasing subsequence,
+longest common subsequence, and diameter (the longest shortest-path) are all in P. None carries a
+global disjointness requirement. What makes long-path hard is not length but "use each vertex at most
+once".
+
 ## Worked instances elsewhere in these notes
 
 - `Comp 2025 summer moed A - Q9 (half-Hamiltonian path).md` — fraction-of-n threshold ⟹ NP-complete
@@ -134,3 +184,17 @@ Track here which parts gave trouble, and how they were resolved.
   Karp-problem costumes pull toward NP-complete; the 2-vs-3 heuristic and the contrast-pair table are
   the fastest lookups. Traps listed: binary vs unary, constant threshold vs fraction of n, unbounded
   witnesses, confusing membership with hardness, and reduction direction.
+- **General (why is "short" easy and "long" hard?):** See the section above. The premise "minimisation
+  is easy, maximisation is hard" was **rejected** — max-flow, maximum matching and maximum spanning
+  tree are in P, while TSP and shortest-simple-path-with-negative-cycles are NP-hard. Correct axis
+  identified: whether the **simplicity (no repeated vertex) constraint is self-enforcing**. Minimising
+  deletes cycles for free, so shortest path may search over walks; maximising makes repetition
+  profitable, so simplicity must be tracked explicitly — which is exactly the 2ⁿ DP state. Three
+  confirming tests recorded (DAG longest path ∈ P; longest walk trivial; shortest simple path with
+  negative cycles NP-hard), plus the two algorithmic mechanisms: loss of optimal substructure (a
+  prefix's value depends on *which* vertices it consumed, so state cannot compress from a set to a
+  number) and loss of a local/dual optimality certificate (feasible potentials for shortest path;
+  nothing comparable for longest, whose complement is coNP-hard). Higher-level frame noted: submodular
+  minimisation is poly while submodular maximisation is NP-hard (min-cut vs max-cut). Counterweight
+  noted so the rule is not over-applied: LIS, LCS and diameter are "long" problems in P — the hardness
+  comes from global disjointness, not from length.
