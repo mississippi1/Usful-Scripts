@@ -74,3 +74,14 @@ Track here which parts gave trouble, and how they were resolved.
   total space = O(1) × O(log n) = O(log n). Key contrast drawn with general PATH (bound |V| ⇒ depth
   |V| ⇒ |V|·log|V| ⇒ NL, not known L): the *constant* length bound is precisely what drops this into
   L. Also noted no simplicity check is needed (walk-existence ⟺ short-simple-path-existence).
+
+- **Q8 (follow-up — confirming the circled "L"):** Correct. Beyond the positive proof (depth-bounded
+  DFS, constant depth 2022, O(log n) space), two **structural** refutations of the other options are
+  worth writing on the exam: **NL-Complete** is not merely unnecessary but *false* — the language is
+  in L, so being NL-complete as well would give **L = NL**; and **NP-Complete** would give **P = NP**
+  since L ⊆ P. General habit: a class marking that contradicts a membership proof you can produce
+  yourself is self-refuting. Placement in the s-t path family (now tabulated in
+  `Study guide - classifying a language (P, NP-complete, PSPACE-complete).md`): length ≤ constant ⟹ L;
+  unbounded reachability (PATH) ⟹ NL-complete; "distance ≥ k" ⟹ NL-complete via NL = coNL;
+  "∃ **simple** path of length ≥ k" ⟹ NP-complete. Rule extracted: **upper bounds (≤ k) are cheap
+  because simplicity is free, lower bounds (≥ k) are expensive because simplicity is the problem.**
