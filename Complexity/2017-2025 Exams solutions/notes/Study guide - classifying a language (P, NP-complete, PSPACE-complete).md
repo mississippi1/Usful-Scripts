@@ -189,6 +189,49 @@ Two reusable rules fall out:
   O(c · log n) = O(log n) space. The branching factor |V| is spent in **time** (|V|^c, still
   polynomial), never in space — the classic wrong estimate is |V|·log|V|.
 
+## Reduction type must be strictly weaker than the class, or completeness collapses
+
+**The mechanism (constant-output lemma, any resource bound r):** if A is decidable within resource
+bound r and B is any non-trivial language (B ≠ ∅, Σ*), then A ≤_r B — decide A within budget r, then
+print one of two hard-coded constants (printing is free; it never touches the work tape). This one
+fact is the source of every degenerate completeness result below.
+
+Consequence: under **≤p**, every non-trivial B (however easy) becomes simultaneously "P-hard",
+"NL-hard", "L-hard" — P is closed under ≤p, and the lemma only needs A ∈ P. Under **≤L**, the same
+collapse happens one class lower: every non-trivial B becomes "L-hard" in the same vacuous sense.
+
+### Class × reduction-type grid
+
+| Class | Example under ≤L | Verdict | Example under ≤p | Verdict |
+|---|---|---|---|---|
+| L | "EVEN (even-length strings) is L-complete under ≤L" | **degenerate-true** — any non-trivial B ∈ L absorbs all of L this way | "REACH-DAG (∈ L) is L-complete under ≤p" | **degenerate-true** — even makes it "P-complete" too |
+| NL | "PATH is NL-complete under ≤L" | **correct, meaningful** — the standard theorem | "PATH is NL-complete under ≤p" | **degenerate-true** — any non-trivial B ∈ P qualifies the same way |
+| P | "CVP is P-complete under ≤L" | **correct, meaningful** — the textbook definition of P-completeness | "CVP is P-complete under ≤p" | **degenerate-true** — true of any non-trivial P language |
+| NP | "SAT is NP-complete under ≤L" | **correct, meaningful** (stronger than usual — Cook–Levin's reduction is log-space computable) | "SAT is NP-complete under ≤p" | **correct, meaningful** — Cook–Levin |
+| PSPACE | "TQBF is PSPACE-complete under ≤L" | **correct, meaningful** (Stockmeyer–Meyer's reduction is log-space computable) | "TQBF is PSPACE-complete under ≤p" | **correct, meaningful** — standard |
+
+**Reading the pattern:** ≤p is a meaningful reduction only for NP and PSPACE (classes not obviously
+inside P). For L, NL, P themselves, ≤p is useless — drop to ≤L. Even ≤L is already too strong for L
+itself; genuine L-completeness needs something weaker still (AC⁰/NC⁰ reductions), which is why
+"L-complete" problems are rarely defined in an intro course at all.
+
+### The three verdict buckets, with genuine examples of each
+
+The grid above is all "true" in some sense (meaningful or degenerate) — none of those cells are
+*false* or *open*. Real examples of all three buckets require crossing an unsettled class boundary,
+or hitting a genuine impossibility:
+
+| Claim | Verdict | Why |
+|---|---|---|
+| SAT is NP-complete under ≤p | **CORRECT** | Cook–Levin, unconditional |
+| A_TM is NP-hard under ≤p (i.e. NP-complete) | **INCORRECT, provably** | A_TM is undecidable, NP ⊆ R — pure computability gap, no complexity assumption needed (same shape as `A_TM ≤p SAT` in `Comp 2022-1 moed A - Q7-Q9 (Part III).md`) |
+| SAT is NL-complete under ≤L | **UNKNOWN** | Hardness half is unconditionally true (SAT is NL-hard by transitivity through NP-hardness); membership — SAT ∈ NL — is equivalent to **NP = NL**, believed false, unproven |
+| 2-SAT is NP-hard under ≤p | **UNKNOWN**, not "false" | 2-SAT ∈ P, so NP-hardness would give **P = NP**; believed false but, like `TQBF ∈ P`, never disproven |
+
+**The line between "incorrect" and "unknown":** incorrect requires an actual proof (a computability
+gap, a hierarchy theorem, a closure argument under a known-true inclusion). Unknown is everything that
+would only be settled by resolving P vs NP, L vs NL, etc. — even when the answer is all but certain.
+
 ## Worked instances elsewhere in these notes
 
 - `Comp 2025 summer moed A - Q9 (half-Hamiltonian path).md` — fraction-of-n threshold ⟹ NP-complete
@@ -227,3 +270,17 @@ Track here which parts gave trouble, and how they were resolved.
   minimisation is poly while submodular maximisation is NP-hard (min-cut vs max-cut). Counterweight
   noted so the rule is not over-applied: LIS, LCS and diameter are "long" problems in P — the hardness
   comes from global disjointness, not from length.
+- **General (for each complexity class and reduction type, which combinations of completeness are
+  correct / incorrect / unknown?):** Full grid added above. Core mechanism identified: a
+  constant-output lemma at *any* resource bound r (decide A within budget r, print a hard-coded
+  constant — free, since output is write-only) makes "C-complete under ≤r" **degenerate** whenever r
+  is not strictly weaker than C itself. Consequence tabulated across L, NL, P, NP, PSPACE × {≤L, ≤p}:
+  ≤p degenerates completeness for L, NL, and P (any non-trivial P language becomes "NL-complete" etc.
+  — the same fact already logged for PATH ≤p HAMCYCLE); ≤L is meaningful for NL, P, NP, PSPACE but
+  degenerates for L itself. Separately produced clean examples of all three requested verdict buckets
+  to contrast with the degenerate-but-true cells: CORRECT (SAT NP-complete under ≤p, Cook–Levin),
+  INCORRECT (A_TM NP-hard under ≤p — refuted by a computability gap, no open problem needed), and
+  UNKNOWN (SAT ∈ NL, equivalent to NP = NL; 2-SAT NP-hard under ≤p, equivalent to P = NP). Rule
+  extracted for telling INCORRECT from UNKNOWN: incorrect requires an actual proof (computability gap,
+  hierarchy theorem, closure under a known inclusion); unknown is anything gated behind an unresolved
+  class-separation conjecture, however confidently believed.
