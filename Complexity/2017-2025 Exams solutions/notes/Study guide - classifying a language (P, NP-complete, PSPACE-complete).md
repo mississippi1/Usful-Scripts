@@ -232,6 +232,62 @@ or hitting a genuine impossibility:
 gap, a hierarchy theorem, a closure argument under a known-true inclusion). Unknown is everything that
 would only be settled by resolving P vs NP, L vs NL, etc. — even when the answer is all but certain.
 
+## Class-vs-class reductions: C1 ≤_r C2 for C1,C2 ∈ {L,NL,P,NP,PSPACE,EXP,EXPSPACE}
+
+Reading "C1 ≤_r C2" (r ∈ {L, p}) as: every language in C1 reduces via ≤_r to some language in C2 —
+equivalently, C1 ⊆ closure_r(C2), where closure_r(C2) is everything that ≤_r-reduces into C2.
+
+**Two facts decide every case.**
+
+*Fact 1 (real chain, all proven):* L ⊆ NL ⊆ P ⊆ NP ⊆ PSPACE ⊆ EXP ⊆ EXPSPACE. Whenever the source
+sits at or before the target in this chain, the statement is **TRUE** automatically (identity
+reduction — a language decides itself in O(log n) space).
+
+*Fact 2 (closure):* closure_L(C)=C for every class here (all closed under ≤L, unconditionally).
+closure_p(C)=C for C ∈ {P,NP,PSPACE,EXP,EXPSPACE} (standard). But **closure_p(L) = closure_p(NL) = P**
+— for any non-trivial B ∈ L (or NL), the constant-output lemma lets every A ∈ P reduce to B via ≤p
+(decide A in poly time, print a constant), and NL ⊆ P means the closure can't overshoot P. So ≤L and
+≤p give the SAME verdict everywhere except when the **target is L or NL**, where ≤p is strictly more
+generous — it really asks "is source ⊆ P?" instead of "⊆ L (or NL)?".
+
+**Only four direct strict separations are proven** (hierarchy theorems); every other adjacent pair in
+the chain is individually open:
+1. L ⊊ PSPACE (space hierarchy)
+2. NL ⊊ PSPACE (Savitch + space hierarchy)
+3. P ⊊ EXP (time hierarchy / direct diagonalization)
+4. PSPACE ⊊ EXPSPACE (space hierarchy)
+
+Everything chainable from these (strict step + plain inclusion) is also proven (e.g. L ⊊ EXP from
+L ⊊ PSPACE ⊆ EXP). But L vs NL, NL vs P, P vs NP, NP vs PSPACE, PSPACE vs EXP, EXP vs EXPSPACE are
+each **individually open**, even though some strictness is known to exist somewhere in the chain.
+
+### Grid: source (rows) × target (columns), verdict for ≤L / ≤p
+
+Source before target (upper triangle incl. diagonal): **TRUE** always, both reductions — omitted below.
+Only source-after-target ("backward") cells are shown; everything else is TRUE by Fact 1.
+
+| Source ↓ \ Target → | L | NL | P | NP | PSPACE | EXP |
+|---|---|---|---|---|---|---|
+| NL | ≤L UNKNOWN (L=NL?) · ≤p TRUE (NL⊆P known) | — | — | — | — | — |
+| P | ≤L UNKNOWN (L=P?) · ≤p TRUE | ≤L UNKNOWN (NL=P?) · ≤p TRUE | — | — | — | — |
+| NP | ≤L/≤p UNKNOWN (both reduce to "NP⊆P?") | ≤L/≤p UNKNOWN (same) | **≤L/≤p UNKNOWN — the P vs NP question itself** | — | — | — |
+| PSPACE | **≤L FALSE** (L⊊PSPACE proven) · ≤p UNKNOWN (PSPACE⊆P? open) | **≤L FALSE** (NL⊊PSPACE proven) · ≤p UNKNOWN | ≤L/≤p UNKNOWN (P vs PSPACE) | ≤L/≤p UNKNOWN (NP vs PSPACE) | — | — |
+| EXP | **≤L/≤p FALSE** (L⊊PSPACE⊆EXP) | **≤L/≤p FALSE** (NL⊊PSPACE⊆EXP) | **≤L/≤p FALSE** (P⊊EXP proven directly) | ≤L/≤p UNKNOWN (NP = EXP? open) | ≤L/≤p UNKNOWN (PSPACE vs EXP) | — |
+
+EXPSPACE never appears as a source in this table (it is the largest class considered, so every row
+against it is the trivial TRUE case).
+
+### The pattern to remember
+
+1. Source before target in the chain ⟹ always TRUE (identity reduction) — no exceptions.
+2. Source after target ⟹ check whether a proven hierarchy separation lies in that gap: if yes, **FALSE**
+   unconditionally (a proof, not a belief); if no, **UNKNOWN**, and name the open problem it is
+   equivalent to (L=NL, NL=P, P=NP, NP=PSPACE, PSPACE=EXP, EXP=EXPSPACE).
+3. ≤p only ever changes the verdict when the **target is L or NL**, and only ever makes TRUE more
+   likely (never FALSE more likely) — it substitutes "source ⊆ P?" for "source ⊆ L/NL?". This is why
+   NL and P (whose containment in L/NL is individually open) flip to TRUE under ≤p, while EXP — which
+   is *provably* outside P — stays FALSE regardless of reduction type.
+
 ## Worked instances elsewhere in these notes
 
 - `Comp 2025 summer moed A - Q9 (half-Hamiltonian path).md` — fraction-of-n threshold ⟹ NP-complete
@@ -284,3 +340,21 @@ Track here which parts gave trouble, and how they were resolved.
   extracted for telling INCORRECT from UNKNOWN: incorrect requires an actual proof (computability gap,
   hierarchy theorem, closure under a known inclusion); unknown is anything gated behind an unresolved
   class-separation conjecture, however confidently believed.
+- **General (prove/disprove/unknown for C1 ≤_r C2 across L, NL, P, NP, PSPACE, EXP, EXPSPACE and
+  r ∈ {≤L, ≤p}):** Full grid added above (84 statements systematically resolved). Framework: C1 ≤_r C2
+  ⟺ C1 ⊆ closure_r(C2). Two governing facts: (1) the real chain L⊆NL⊆P⊆NP⊆PSPACE⊆EXP⊆EXPSPACE makes
+  every "source before/at target" cell TRUE via the identity reduction; (2) closure_L(C)=C for every
+  class here, but **closure_p(L) = closure_p(NL) = P** — the same degenerate-collapse mechanism
+  already logged for PATH ≤p HAMCYCLE and the reduction-type grid, now shown to inflate the *target*
+  class rather than just the source. Only four direct proven strict separations exist (L⊊PSPACE,
+  NL⊊PSPACE, P⊊EXP, PSPACE⊊EXPSPACE, all via hierarchy theorems); every other adjacent link (L vs NL,
+  NL vs P, P vs NP, NP vs PSPACE, PSPACE vs EXP, EXP vs EXPSPACE) is individually **open**, even
+  though the aggregate gaps are proven strict. Consequence for the grid: "backward" cells (source
+  strictly after target in the chain) are FALSE only when a proven separation spans that gap
+  (giving several unconditional refutations, e.g. EXP ≤_r P/NL/L all FALSE since P⊊EXP is proven and
+  ≤p's target-inflation to P doesn't rescue it); otherwise UNKNOWN, each equivalent to a named open
+  problem (P≤_L NL ⟺ NL=P; NP≤_r P ⟺ P=NP; PSPACE≤_r P ⟺ P=PSPACE; EXP≤_r NP ⟺ NP=EXP; etc.). Key
+  corrected misconception during derivation: knowing an AGGREGATE span is strict (e.g. L⊊PSPACE, which
+  spans four adjacent links) does NOT let you conclude any specific narrower sub-link (e.g. L vs NL)
+  is strict — that remains fully open; only a DIRECTLY proven strict pair (or one chainable from it via
+  ⊊ then ⊆) licenses a FALSE verdict.
