@@ -161,3 +161,10 @@ Track here which parts gave trouble, and how they were resolved.
   and that NL = coNL (Immerman–Szelepcsényi) is genuinely load-bearing here, not decorative.
   Contrast within this same exam: Q8 (LargeCycle) *is* NP-complete, because there the certificate must
   prove all vertices are **distinct**, which log space cannot do.
+
+- **Q7 (cross-reference — the near-identical twin that IS NP-complete):** Comp 2023-2 moed A Q8
+  defines L = {⟨G,s,t,k⟩ : G contains a **simple path** from s to t of length ≥ k} — same vocabulary,
+  opposite class (**NP-complete**, by HAM-PATH ≤p L with k = n−1). Full write-up and the side-by-side
+  comparison table live in `Comp 2023-2 moed A - Q8.md`. Keep the pair together when revising: the
+  deciding word is **"distance"** (a minimum over paths ⟹ a lower bound on it is universal ⟹ NL)
+  versus **"contains a simple path"** (existential over an object needing a distinctness check ⟹ NP).

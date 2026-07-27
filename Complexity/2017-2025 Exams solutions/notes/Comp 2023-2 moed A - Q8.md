@@ -40,6 +40,31 @@ path). Change either and it collapses into P:
 Reachability (st-connectivity) only tells you *some* path exists — nothing about whether a *long
 simple* one does. That gap is the NP-hard core.
 
+### Near-identical twin: Comp 2022-2 moed A, Q7 ("LongPath") — which is **NL-complete**
+
+See `Comp 2022-2 moed A - Q7-Q8.md`. The two items look almost the same and land in different
+classes; the decisive word is **"distance"**:
+
+| | Comp 2022-2 moed A Q7 | Comp 2023-2 moed A Q8 (this one) |
+|---|---|---|
+| definition | "the **distance** from s to t is ≥ k" | "contains a **simple path** from s to t of length ≥ k" |
+| real meaning | **no** s→t path of length < k exists | there **exists** a long simple s→t path |
+| quantifier | ∀ (universal) | ∃ (existential) |
+| name vs content | called *LongPath*, but is reachability | actually is the long-path problem |
+| class | **NL-complete** (via NL = coNL) | **NP-complete** |
+
+A *distance* is a **minimum over paths**, so bounding it from below is a claim about *all* paths —
+universal, and log-space checkable through the complement. This language has no minimum anywhere: it
+asserts the graph *contains* an object, and that object must be **simple**.
+
+The single deciding feature across this whole family: **must the witness certify distinctness?**
+No ⟹ a walk suffices ⟹ current vertex + counter in O(log n) ⟹ **NL**. Yes ⟹ the visited set must be
+remembered, Θ(n) bits ⟹ **NP**.
+
+Also note how this item compares to `Comp 2025 summer moed A - Q9 (half-Hamiltonian path).md`: same
+HAM-PATH hardness idea, but easier here, because k is a free input parameter (just set k = n−1)
+whereas there the threshold was pinned to n/2 − 1 and the graph had to be padded.
+
 ---
 
 ## Issues log
@@ -90,3 +115,14 @@ Track here which parts gave trouble, and how they were resolved.
     path while keeping it simple is exactly the Hamiltonian difficulty.
   - Net: L is NP-complete ⇒ Lᶜ is coNP-complete; a real BFS decider for Lᶜ would give P = NP. BFS
     decides reachability (shortest / existence), not "longest simple path < k".
+
+- **Q8 (follow-up — "is this the same question as the 2022 LongPath item?"):** **No** — they are the
+  deliberate mirror pair, and the NP-complete marking is **correct** here. Comp 2022-2 moed A Q7
+  defines membership by "the **distance** from s to t is ≥ k", i.e. *no* path shorter than k exists —
+  a universal condition, **NL-complete** via NL = coNL. This item asserts the graph **contains a
+  simple path** of length ≥ k — existential over an object that must be simple, hence **NP-complete**.
+  Deciding word: *distance* is a **minimum over paths**, so a lower bound on it quantifies over all
+  paths. Comparison table added above. Also recorded: relative to the 2025 summer moed A Q9 half-path
+  item, hardness here is easier because k is a free input parameter (take k = n−1) rather than pinned
+  to n/2 − 1 with padding required. Rejected options confirmed: P would give P = NP given the
+  hardness, and coNP-complete is impossible since L ∈ NP (NP-complete ∧ coNP-complete ⟹ NP = coNP).
