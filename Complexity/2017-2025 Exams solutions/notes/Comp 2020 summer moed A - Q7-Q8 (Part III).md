@@ -1,7 +1,14 @@
-# Comp 2020 Moed A (חורף) — Question 7 (study notes)
+# Comp 2020 summer (קיץ) Moed A — חלק III, Questions 7-8 (study notes)
 
-Source exam: `Complexity/2017-2025 Exams/Comp 2020 moed A.pdf`, חלק III, Q7 (7 pts).
+Source exam: `Complexity/2017-2025 Exams/Comp 2020 moed A.pdf` (dated 29.7.2020 — this is the
+**summer** moed A; a screenshot captioned "מועד א חורף 2020" was mislabeled, the Q7/Q8 text matches
+this PDF verbatim), חלק III, Q7-Q8 (7 pts each).
 Official solution: `Complexity/2017-2025 Exams solutions/Comp 2020 moed A solution.pdf`.
+
+חלק III instructions: for each claim mark נכונה / לא נכונה / נכונותה לא ידועה; if "לא ידוע", circle
+every one of P=NP, P≠NP, NP=coNP, NP=NL, P=PSPACE that would follow if the claim were proved true.
+Justify your answer and every implication you circled — no need to justify the ones you left unmarked.
+(Q9 of the same part, CLIQUE ≤p PATH, is not covered here.)
 
 ## Q7 — the claim
 
@@ -128,6 +135,58 @@ computable — that is the one load-bearing extra claim.
 
 ---
 
+# Q8 (7 pts) — the claim
+
+> **Claim:** TQBF ∈ P
+>
+> Reminder: TQBF is the language of all boolean formulas in which **every variable is quantified**,
+> and the quantified formula is **true**.
+
+## Answer
+
+**נכונותה לא ידועה (UNKNOWN).** Circle **P = NP**, **NP = coNP**, **P = PSPACE**.
+Do **not** circle P ≠ NP (it is contradicted) and do **not** circle NP = NL (it is *refuted* — see below).
+
+## Why the status is unknown
+
+TQBF is **PSPACE-complete** (Stockmeyer–Meyer). So "TQBF ∈ P" is not merely *related to* P = PSPACE —
+it **is** that open question restated, exactly as "SAT ∈ P" is P = NP restated. Widely believed false.
+
+Easy half, worth one line on the exam: **TQBF ∈ PSPACE** — evaluate the quantifier tree recursively,
+reusing space between the two recursive calls; recursion depth ≤ #variables, so O(n) bits suffice.
+
+## The implications, each justified
+
+- **P = PSPACE.** Let L ∈ PSPACE be arbitrary. TQBF is PSPACE-complete, so L ≤p TQBF; by assumption
+  TQBF ∈ P; P is closed under ≤p; hence L ∈ P. So PSPACE ⊆ P, and P ⊆ PSPACE always. ∎
+- **P = NP.** P ⊆ NP ⊆ PSPACE = P. (NP ⊆ PSPACE: enumerate certificates one at a time, reusing the
+  space; or NP ⊆ NPSPACE = PSPACE by Savitch.) ∎
+- **NP = coNP.** From P = NP plus closure of P under complement: coNP = co(P) = P = NP. ∎
+
+## Why NP = NL must NOT be circled
+
+Stronger than "does not follow" — the assumption **refutes** it:
+
+- Under the assumption NP = P = PSPACE.
+- But **NL ⊊ PSPACE unconditionally**: NL ⊆ SPACE(log²n) by Savitch, and SPACE(log²n) ⊊ PSPACE by the
+  space hierarchy theorem.
+- Hence NP = PSPACE ≠ NL.
+
+Related fact worth carrying: we *can* prove **TQBF ∉ L** (L ⊊ PSPACE by the space hierarchy theorem,
+and TQBF is PSPACE-complete under log-space reductions), yet we cannot prove TQBF ∉ P. Hierarchy
+theorems separate classes measured in the *same* resource; P vs PSPACE crosses time against space,
+which is where the tools run out.
+
+## Exam checklist for this item
+
+- [x] Mark **נכונותה לא ידועה**; circle exactly P = NP, NP = coNP, P = PSPACE.
+- [x] State TQBF is PSPACE-complete — that is the engine for the whole item.
+- [x] Justify each circled implication (the exam explicitly requires it); the chain is
+      P = PSPACE ⟹ P = NP ⟹ NP = coNP.
+- [x] Do not reflexively circle NP = NL just because other collapses hold.
+
+---
+
 ## Issues log
 
 Track here which parts gave trouble, and how they were resolved.
@@ -156,3 +215,14 @@ Track here which parts gave trouble, and how they were resolved.
   log-space computable), and PATH ∈ NL ⊆ NP. Side facts confirmed: ≤L ⊆ ≤p so the log-space claim is
   strictly stronger; transitivity of ≤L needs the recompute-f-on-demand trick rather than storing the
   intermediate string; and HAMCYCLE ≤L PATH would give NP ⊆ NL, i.e. both P = NP and NP = NL.
+- **Q8 (TQBF ∈ P — true, false, or unknown?):** Resolved as **לא ידוע**, circling P = NP, NP = coNP,
+  P = PSPACE. Key move: TQBF is PSPACE-complete, so the claim *is* the open P = PSPACE question
+  restated (the SAT ∈ P ⟺ P = NP pattern one level up). Implication chain recorded:
+  P = PSPACE ⟹ P = NP (since P ⊆ NP ⊆ PSPACE) ⟹ NP = coNP (P closed under complement). The trap
+  confirmed: **NP = NL is not merely unimplied but refuted**, because NL ⊆ SPACE(log²n) ⊊ PSPACE
+  (Savitch + space hierarchy) while the assumption makes NP = PSPACE. Also noted that TQBF ∉ L *is*
+  provable while TQBF ∉ P is not — hierarchy theorems only separate within one resource.
+- **Note bookkeeping:** the source PDF `Comp 2020 moed A.pdf` is dated 29.7.2020, i.e. the **summer**
+  moed A, and contains both Q7 and Q8 of חלק III verbatim; an earlier screenshot caption saying
+  "מועד א חורף 2020" was wrong. File renamed from `Comp 2020 moed A - Q7 (PATH ≤p HAMCYCLE).md` to
+  match the repo's "summer/winter" naming convention.
