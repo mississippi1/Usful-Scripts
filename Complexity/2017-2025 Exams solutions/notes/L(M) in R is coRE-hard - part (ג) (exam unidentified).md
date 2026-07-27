@@ -116,6 +116,49 @@ for free. A question phrased "הראו/הוכיחו" normally still wants the ex
 
 ---
 
+## Can you reduce from ALL_TM instead?
+
+**In principle yes, but it is the wrong tool.** ALL_TM = { ⟨M⟩ : L(M) = Σ* } **is** coRE-hard
+(Ā_TM ≤m ALL_TM), so ALL_TM ≤m L would give coRE-hardness by transitivity, and such a reduction does
+exist. Two costs make it a bad choice:
+
+**1. Extra proof burden.** ALL_TM is **not coRE-complete** — the formula sheet's page-4 table lists it
+under $\overline{RE ∪ coRE}$ (it is Π⁰₂-complete, strictly above coRE). Reducing from it means you
+must *also* prove ALL_TM is coRE-hard first. NON-HALT is coRE-**complete**, a citable one-liner —
+one reduction instead of two.
+
+**2. The polarity is hostile.** You would need L(M) = Σ* ⇒ L(M′) decidable, and L(M) ≠ Σ* ⇒ L(M′)
+undecidable. The second case gives you almost nothing to work with — possibly just one missing word.
+All the natural attempts die:
+
+| attempt | ALL case | non-ALL case | verdict |
+|---|---|---|---|
+| L(M′) = L(M) | Σ* ✓ | L(M) could be ∅ — decidable | ✗ |
+| L(M′) = L(M) ∪ A_TM | Σ* ✓ | L(M) = Σ*∖{x₀} with x₀ ∈ A_TM ⇒ union = Σ* | ✗ |
+| L(M′) = { x : M accepts all z with \|z\| ≤ \|x\| } | Σ* ✓ | shortest missing word at length m ⇒ { x : \|x\| < m }, **finite** | ✗ |
+
+The third row is the **same length-threshold collapse** as Pitfall 1.
+
+### The useful lesson: the budget gadget is right, the target was wrong
+
+The standard proof of Ā_TM ≤m ALL_TM is *exactly* the step-budget construction that fails here:
+
+> M′ on x: simulate M on w for |x| steps; **accept iff M has not accepted w within |x| steps**.
+> M doesn't accept w ⇒ L(M′) = Σ* ✓; M accepts w at step t ⇒ L(M′) = { x : |x| < t } ≠ Σ* ✓
+
+Same machine, same budget, same finite length-threshold language — and against **ALL_TM** it works
+perfectly, because a finite set is emphatically **not Σ***. Against **"L(M) ∈ R"** the identical
+construction is useless, because a finite set **is decidable**.
+
+> **The gadget is real and reusable; it just needs a target property that length thresholds can
+> distinguish.** `= Σ*` can see them. `∈ R` cannot — every length-threshold language falls on the
+> same side of it.
+
+*(Beyond course scope: ALL_TM ≤m L exists because L is Σ⁰₃-complete while ALL_TM is Π⁰₂ ⊆ Σ⁰₃ — a
+degree-theoretic guarantee, not a construction worth writing.)*
+
+---
+
 ## Where this language really sits
 
 coRE-hard is a **weak** lower bound here. "L(M) is decidable" is the index set REC, which is
@@ -152,3 +195,17 @@ the exam is asking only for the one reduction.
   { n ≥ t } or { n < t } — all regular. So a budget-only construction can never leave R in *either*
   polarity. Fix keeps the student's polarity: budget expired → accept, M halted → **accept iff
   x ∈ A_TM**, giving Σ* in the good case and a finite modification of A_TM in the bad one.
+
+- **Part (ג) (follow-up 2)** — Asked whether the reduction could instead come from **ALL_TM**.
+  Answer: possible in principle but the wrong tool, for two reasons. (1) ALL_TM is **not
+  coRE-complete** — it is Π⁰₂-complete, listed under $\overline{RE ∪ coRE}$ on the formula sheet's
+  page-4 table — so using it as a source adds the burden of first proving Ā_TM ≤m ALL_TM, i.e. two
+  reductions where NON-HALT (coRE-**complete**) needs one. (2) The required polarity
+  ("L(M) ≠ Σ* ⇒ L(M′) undecidable") gives almost nothing to work with, and every natural attempt
+  fails: L(M′) = L(M) breaks when L(M) = ∅; L(M′) = L(M) ∪ A_TM breaks when L(M) = Σ*∖{x₀} with
+  x₀ ∈ A_TM; and L(M′) = { x : M accepts all z with |z| ≤ |x| } yields a **finite** language in the
+  non-ALL case — the same length-threshold collapse as Pitfall 1. Resolved with the connection worth
+  keeping: the step-budget gadget the student kept reaching for **is** the textbook proof of
+  Ā_TM ≤m ALL_TM, and it works there because a finite length-threshold language is not Σ*. It fails
+  against "L(M) ∈ R" because that same finite language *is* decidable. The gadget is sound and
+  reusable — it just needs a target property that length thresholds can distinguish.
