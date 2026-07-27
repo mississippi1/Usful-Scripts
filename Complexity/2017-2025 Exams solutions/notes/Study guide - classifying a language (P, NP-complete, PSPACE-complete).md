@@ -168,6 +168,27 @@ longest common subsequence, and diameter (the longest shortest-path) are all in 
 global disjointness requirement. What makes long-path hard is not length but "use each vertex at most
 once".
 
+## The s-t path family on one page (L / NL / NP)
+
+Four exam items, nearly identical wording, four different answers. Read the **bound** and the
+**quantifier**, never the name:
+
+| Language | The condition | Class | Why |
+|---|---|---|---|
+| ST-Conn₂₀₂₂ — ∃ path s→t of length ≤ **2022** | constant bound | **L** | depth-bounded DFS: recursion depth O(1), each frame one vertex + one index ⟹ O(log n) |
+| PATH — ∃ path s→t (unbounded) | bound is \|V\| | **NL-complete** | depth \|V\| kills deterministic log space; guess the walk step-by-step with a counter |
+| LongPath — **distance** s→t ≥ k | universal: no short path exists | **NL-complete** | complement is bounded reachability ∈ NL, then NL = coNL |
+| ∃ **simple** path s→t of length ≥ k | existential + distinctness | **NP-complete** | witness must prove no repeated vertex: Θ(n) bits, not O(log n) |
+
+Two reusable rules fall out:
+
+- **Upper bounds (≤ k) are cheap, lower bounds (≥ k) are expensive.** For "≤ k" simplicity is free
+  (chopping cycles only shortens a walk), so you may search over walks. For "≥ k" simplicity is the
+  entire difficulty.
+- **A constant bound collapses the depth.** Any "≤ c" for fixed c makes bounded DFS run in
+  O(c · log n) = O(log n) space. The branching factor |V| is spent in **time** (|V|^c, still
+  polynomial), never in space — the classic wrong estimate is |V|·log|V|.
+
 ## Worked instances elsewhere in these notes
 
 - `Comp 2025 summer moed A - Q9 (half-Hamiltonian path).md` — fraction-of-n threshold ⟹ NP-complete
