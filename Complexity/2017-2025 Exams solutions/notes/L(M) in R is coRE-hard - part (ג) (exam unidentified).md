@@ -57,15 +57,38 @@ construction genuinely needs M′ to be **total**.
 
 ## Pitfalls
 
-### 1. The "halted" branch must be undecidable
+### 1. A step budget alone can NEVER work (both branches must not be trivial)
 
-The single most common way to break this reduction: let M′ simply **accept** once the simulation of
-M on w halts. Then in the halting case
+The single most common way to break this reduction: make both branches trivial actions
+(accept / reject / loop), so that the only non-trivial thing M′ does is check the step budget.
+Every such attempt fails, and there is a clean reason why.
 
-  L(M′) = { x : |x| ≥ t }  — **regular**, hence decidable,
+> **Impossibility.** If M′'s behaviour on x depends **only on |x|**, then L(M′) is determined by a
+> set S ⊆ ℕ of accepted lengths. In a budget construction S is
+> { n : M halts on w within n steps } or its complement — and that predicate is **monotone in n**,
+> so S is always ∅, ℕ, { n ≥ t }, or { n < t }. All four languages are regular, hence **decidable**.
 
-so *both* cases land inside L and the reduction proves nothing. Simulating M on w is only the
-*trigger*; the undecidability has to be supplied by the tail behaviour (A_TM, HALT, …).
+So no budget-only construction can ever leave R, **in either polarity**:
+
+| "budget expired" branch | "M halted" branch | L(M′) when M halts on w at step t | in R? |
+|---|---|---|---|
+| reject | accept | { x : \|x\| ≥ t } (co-finite) | ✓ decidable |
+| **accept** | **loop** | { x : \|x\| < t } (**finite**) | ✓ decidable |
+
+Both rows give a decidable language, and the non-halting case gives ∅ or Σ* — also decidable. So f
+maps *every* input to a yes-instance of L and carries no information whatsoever.
+
+Note the second row's language is the set of **short** words, not the long ones: when |x| < t the
+budget expires *before* M halts, so those are exactly the inputs that reach the "expired" branch.
+
+**The fix, keeping either polarity:** replace the trivial branch with a hard one. E.g. budget
+expired → accept; M halted → accept iff x ∈ A_TM. Then M doesn't halt on w ⇒ L(M′) = Σ* ∈ R, and
+M halts at t ⇒ L(M′) = { x : |x| < t } ∪ (A_TM ∩ { x : |x| ≥ t }), which differs from A_TM on
+finitely many strings and is therefore undecidable.
+
+**The shape to remember:** simulating M on w is only a **switch** selecting *which* language M′
+recognizes. At least one setting of that switch must be genuinely undecidable — the switch itself
+can never supply that.
 
 ### 2. L(M) ∈ R is a property of the *language*, not of the *machine*
 
@@ -116,3 +139,16 @@ the exam is asking only for the one reduction.
   entirely. The instinct to add a step budget comes from constructions needing a **total** M′, which
   is unnecessary here because L(M) ∈ R constrains the *language*, not the machine — a machine
   looping on every input has L(M′) = ∅ ∈ R and is a valid yes-instance.
+
+- **Part (ג) (follow-up)** — Tried the budget construction with **both branches trivial**: budget
+  expired → **accept**, M halted → **loop forever**. Correctly suspected it fails, but identified
+  the wrong language: it is the **finite** set { x : |x| < t } (the *short* words — when |x| < t the
+  budget expires before M halts, so those are the inputs reaching the "accept" branch), not the long
+  ones. Resolved: the failure is total, not partial — the non-halting case gives L(M′) = Σ* and the
+  halting case gives a finite language, both decidable, so f maps *every* input to a yes-instance of
+  L. Root cause: no undecidable ingredient anywhere. Generalized into the impossibility result now in
+  Pitfall 1 — if M′'s behaviour depends only on |x|, the accepted-length set is
+  { n : M halts on w within n steps } or its complement, which is **monotone**, hence always ∅, ℕ,
+  { n ≥ t } or { n < t } — all regular. So a budget-only construction can never leave R in *either*
+  polarity. Fix keeps the student's polarity: budget expired → accept, M halted → **accept iff
+  x ∈ A_TM**, giving Σ* in the good case and a finite modification of A_TM in the bad one.
