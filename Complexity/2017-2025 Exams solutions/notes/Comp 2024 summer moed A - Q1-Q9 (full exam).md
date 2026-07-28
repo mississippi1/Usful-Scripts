@@ -199,6 +199,11 @@ Hence for every ⟨M⟩ and every σ, at least one of the two conditions fails: 
 σσ in one step, or M halts on σσσσ. No ⟨M⟩ satisfies the definition, so **L = ∅ ∈ R**
 (the machine that rejects everything decides it). ∎
 
+> **Full treatment of this trap family:** `Study guide - empty-language traps (when a machine
+> property is unsatisfiable).md` — the bounded-computation contradiction used here, the
+> `L(M) ∈ coRE ∖ R` contradiction from Comp 2025-2026 moed A Q5, and the link to Rice's
+> non-triviality hypothesis.
+
 **Why this is the trap.** The question is *dressed up* as a coRE-flavoured classification: the
 "does not halt on …" clause looks like Ā_TM/HALT-bar, and the reflex is to answer coRE∖R and start
 building a reduction. But a one-step computation **cannot see past the first tape cell**, so the

@@ -227,6 +227,11 @@ Before reaching for Rice or a reduction here, ask: **can the stated property hol
 Compare the identically-shaped trap in *Comp 2024 summer moed A Q6* (`accepts σσ in one step but
 does not halt on σσσσ` — also empty, also R, also for a purely structural reason).
 
+> **Full treatment:** `Study guide - empty-language traps (when a machine property is
+> unsatisfiable).md` — proves L(M) ∈ RE and RE ∩ coRE = R from the definitions, tabulates every
+> `L(M) ∈ 𝒞` condition by whether 𝒞 ∩ RE is empty, and connects the pattern to Rice's
+> non-triviality hypothesis.
+
 **Contrast — the questions this is NOT:**
 
 | language | answer | why |
@@ -326,85 +331,212 @@ the target end) is the standard way to do it.
 
 ## Q8 (9 + 9 pts) — true / false / unknown
 
+Format reminder: mark **א. נכונה** (true) / **ב. לא נכונה** (false) / **ג. נכונותה לא ידועה**
+(truth unknown). If you pick ג, you must additionally circle **every** listed fact that *would
+follow* if the claim were proved true, and justify each one. You need not explain why the facts you
+left unmarked do not follow.
+
+---
+
 ### Q8.א (9 pts) — claim: A_NFA ≤_logspace PATH
 
-A_NFA = { ⟨N,w⟩ : N is an NFA over Σ, w ∈ Σ*, w ∈ L(N) };
-PATH = { ⟨G,s,t⟩ : G directed, s,t ∈ V, there is a path from s to t }.
+A_NFA = { ⟨N,w⟩ : N is an NFA over Σ, w ∈ Σ*, and w ∈ L(N) }
+PATH = { ⟨G,s,t⟩ : G = ⟨V,E⟩ directed, s,t ∈ V, and there is a path from s to t in G }
 
-**Answer: א. נכונה — the claim is TRUE.** (Nothing to circle in part ג.)
+**Answer: א. נכונה — the claim is TRUE.** (Part ג is not used, so nothing to circle.)
 
-**Slick proof.** **A_NFA ∈ NL**: guess the run of N on w one step at a time, storing only the current
-state and the current position in w — O(log(|N| + |w|)) bits. **PATH is NL-complete** under logspace
-reductions (seen in class). By definition of NL-completeness, every language in NL logspace-reduces
-to PATH, so A_NFA ≤_logspace PATH. ∎
+#### What ≤_logspace means precisely
 
-**Explicit construction** (the layered run-graph, which is really the same proof unrolled).
-Given ⟨N, w⟩ with N = ⟨Q, Σ, δ, Q₀, F⟩ and w = σ₁⋯σₙ, output ⟨G, s, t⟩ with
+f is a **logspace reduction** from A to B if f is computed by a TM with
 
-- **vertices** (q, i) for q ∈ Q, 0 ≤ i ≤ n, plus two fresh vertices s and t
-- **edges**
-  - (q, i) → (q′, i+1) whenever q′ ∈ δ(q, σ_{i+1}), for 0 ≤ i < n  *(consume a letter)*
-  - (q, i) → (q′, i) whenever q′ ∈ δ(q, ε)  *(ε-move, if the course's NFAs have them)*
-  - s → (q, 0) for every q ∈ Q₀, and (q, n) → t for every q ∈ F
+- a **read-only** input tape,
+- a **write-only, one-directional** output tape (its size does **not** count against the budget),
+- a **work tape** bounded by **O(log n)** cells,
 
-Then a path s ⇝ t in G is exactly an accepting run of N on w, so **⟨N,w⟩ ∈ A_NFA ⟺ ⟨G,s,t⟩ ∈ PATH**.
+and x ∈ A ⟺ f(x) ∈ B. The output may be polynomially long — that is fine, since only the *work*
+tape is charged. This distinction is the whole reason the construction below fits in the budget:
+the graph we emit is much bigger than log n, but we never store it, we only stream it out.
 
-**Logspace:** the output has |Q|·(n+1) + 2 vertices. Iterate over (q, i, q′) with three counters of
-O(log(|Q|·n)) bits, and for each triple scan the input's description of δ to decide whether to emit
-the edge. Work space is O(log |⟨N,w⟩|); the output tape is write-only and does not count. ✓
+#### Proof 1 — by citation (two lines)
 
-> **Cross-link — do not confuse membership with universality.** Compare
-> *Comp 2025-1 moed A Q8.א*, where the claim was **ALL_NFA ≤p PATH** and the answer was
-> **"truth unknown"** (equivalent to P = PSPACE). The difference is entirely in the NFA problem:
->
-> | problem | question | complexity | reduction to PATH |
-> |---|---|---|---|
-> | **A_NFA** | is *this word* accepted? | **NL-complete** | ≤_logspace — **provably true** |
-> | **ALL_NFA** | is *every word* accepted? | **PSPACE-complete** | ≤p — **unknown** (⟺ P = PSPACE); ≤_L provably false |
->
-> Membership in an NFA is cheap (guess one run); universality needs the subset construction.
+1. **A_NFA ∈ NL.** Guess the accepting run of N on w = σ₁⋯σₙ one step at a time. Store only
+   *(current state q, current position i)*. Repeatedly: guess q′, verify q′ ∈ δ(q, σ_{i+1}) by
+   looking up δ in the read-only input and reading σ_{i+1}, then set q ← q′, i ← i+1. Accept if
+   i = n and q ∈ F. Space used: ⌈log|Q|⌉ + ⌈log(n+1)⌉ = **O(log |⟨N,w⟩|)** bits.
+2. **PATH is NL-complete** under logspace reductions (proved in class).
+
+By the definition of NL-completeness, *every* language in NL logspace-reduces to PATH. With (1),
+**A_NFA ≤_logspace PATH**. ∎
+
+#### Proof 2 — explicit construction (the layered run-graph)
+
+Same proof unrolled; safer to write on an exam, and it makes the logspace budget visible.
+
+Given ⟨N, w⟩ with N = ⟨Q, Σ, δ, Q₀, F⟩ and w = σ₁⋯σₙ, output ⟨G, s, t⟩ where:
+
+- **Vertices:** (q, i) for every q ∈ Q and 0 ≤ i ≤ n, plus two fresh vertices **s** and **t**.
+  Read (q, i) as "N could be in state q having consumed exactly the first i letters of w".
+- **Edges:**
+  - (q, i) → (q′, i+1) whenever q′ ∈ δ(q, σ_{i+1}), for 0 ≤ i < n   *(consume one letter)*
+  - (q, i) → (q′, i) whenever q′ ∈ δ(q, ε)   *(ε-move, if the course's NFAs allow them — stays in
+    the same layer)*
+  - **s** → (q, 0) for every q ∈ Q₀   *(any initial state)*
+  - (q, n) → **t** for every q ∈ F   *(any accepting state, after the whole word)*
+
+**Correctness.** A path s ⇝ t in G is precisely: pick an initial state, follow transitions consuming
+σ₁,…,σₙ in order (possibly with ε-moves), and end in an accepting state — i.e. **an accepting run of
+N on w**. Conversely every accepting run yields such a path. Hence
+**⟨N,w⟩ ∈ A_NFA ⟺ ⟨G,s,t⟩ ∈ PATH.** ∎
+
+**Micro-example.** Σ = {a,b}, Q = {q₀,q₁}, Q₀ = {q₀}, F = {q₁},
+δ(q₀,a) = {q₀,q₁}, δ(q₁,b) = {q₁}, and w = ab (n = 2). The graph has layers 0,1,2:
+
+```
+ s → (q₀,0)
+      (q₀,0) →a (q₀,1)      (q₀,0) →a (q₁,1)
+      (q₁,1) →b (q₁,2)
+      (q₁,2) → t
+```
+so s → (q₀,0) → (q₁,1) → (q₁,2) → t exists ⟺ ab ∈ L(N). ✓
+(The dead branch (q₀,1) has no b-transition and simply leads nowhere.)
+
+**Logspace analysis.** G has |Q|·(n+1) + 2 vertices, so a vertex name (q, i) needs
+O(log|Q| + log n) = O(log |⟨N,w⟩|) bits. To emit the edges, loop over triples (q, i, q′) with three
+counters of that size; for each triple, scan the read-only input's encoding of δ to test whether
+q′ ∈ δ(q, σ_{i+1}), and if so **write the edge to the output tape and forget it**. Work-tape usage is
+the three counters plus O(1) scratch — **O(log n)**. The output is polynomially long but uncharged. ✓
+
+#### The instinct to suppress: "NFAs blow up exponentially"
+
+The reflex says *NFA ⇒ subset construction ⇒ 2^|Q| states ⇒ expensive*. That reflex is right for
+**universality/equivalence/complement**, and wrong here. Deciding whether **one specific word** is
+accepted needs only **one accepting run**, and a single run is described by one state plus one
+position — logarithmically many bits. You never materialize the subset automaton; nondeterminism
+(or, equivalently, graph reachability) explores the runs for you.
+
+The determinization blow-up costs you only when the question quantifies over **all** words.
+
+#### The family, so you never mix them up
+
+| problem | question | complexity | reduction to PATH |
+|---|---|---|---|
+| **A_DFA** | is this word accepted by this DFA? | **L** (deterministic logspace) | trivially ≤_logspace |
+| **A_NFA** | is *this word* accepted? | **NL-complete** | ≤_logspace — **provably true** |
+| **E_NFA** (emptiness) | is *some* word accepted? | **NL-complete** | ≤_logspace — reachability of an accepting state |
+| **ALL_NFA** | is *every* word accepted? | **PSPACE-complete** | ≤p — **unknown** (⟺ P = PSPACE); ≤_L **provably false** |
+| **EQ_NFA** | do two NFAs agree? | **PSPACE-complete** | same as ALL_NFA |
+
+> **Cross-link.** Compare *Comp 2025-1 moed A Q8.א*, where the claim was **ALL_NFA ≤p PATH** and the
+> answer was **"truth unknown"** (equivalent to P = PSPACE), while **ALL_NFA ≤_L PATH** is provably
+> *false* (it would give ALL_NFA ∈ NL, contradicting NL ⊊ PSPACE by the Space Hierarchy Theorem).
+> Two claims that look almost identical on paper — `A_NFA ≤_L PATH` vs `ALL_NFA ≤_L PATH` — land on
+> **opposite** verdicts, provably true and provably false, and the only thing that changed is
+> *membership vs universality*.
+
+---
 
 ### Q8.ב (9 pts) — claim: L ∈ NP, where L couples 3SAT to ALL_NFA
 
 L = { ⟨θ, A⟩ : θ is a 3CNF formula, A is an NFA, and **θ is satisfiable iff L(A) = Σ*** }
 
-**Answer: ג. נכונותה לא ידועה — and it would imply NP = PSPACE and NP = coNP.**
+**Answer: ג. נכונותה לא ידועה (truth unknown).**
+**Circle: NP = PSPACE and NP = coNP.**
+(Do **not** circle P = NP, P ≠ NP, P = PSPACE, P = NL, or L = NL.)
 
-**Circle: NP = PSPACE and NP = coNP.** (Not P = NP, not P ≠ NP, not P = PSPACE, not P = NL, not L = NL.)
+#### Step 0 — read the biconditional
 
-The claim is **equivalent to NP = PSPACE**, an open problem. Here is the whole picture:
+"iff" is an **XNOR**, not a conjunction. Writing S = "θ is satisfiable" and U = "L(A) = Σ*":
 
-**Step 1 — L is PSPACE-hard.** Fix a satisfiable 3CNF formula θ_sat (e.g. (x ∨ x ∨ x)) and map
-⟨A⟩ ↦ ⟨θ_sat, A⟩. Since "θ_sat is satisfiable" is *true*, the biconditional reduces to its right
-side: ⟨θ_sat, A⟩ ∈ L ⟺ L(A) = Σ* ⟺ ⟨A⟩ ∈ ALL_NFA. This map is computable in polynomial time
-(it prepends a constant), so **ALL_NFA ≤p L**. ALL_NFA is PSPACE-complete, so L is **PSPACE-hard**.
+  ⟨θ,A⟩ ∈ L ⟺ (S ∧ U) ∨ (¬S ∧ ¬U)
 
-**Step 2 — L ∈ PSPACE.** Decide "θ satisfiable" (3SAT ∈ NP ⊆ PSPACE), decide "L(A) = Σ*"
-(ALL_NFA ∈ PSPACE), and return the XNOR of the two bits. PSPACE is closed under these operations,
-so L ∈ PSPACE. Together with Step 1, **L is PSPACE-complete**.
+So L = (3SAT × ALL_NFA) ∪ (¬3SAT × ¬ALL_NFA) — a pair is in L when the two components **agree**.
+The crucial consequence: **fixing one component to a constant collapses the biconditional onto the
+other component** (possibly negated). That is the whole engine of the hardness proof.
 
-**Step 3 — the equivalence.**
-- (⇒) If L ∈ NP, then since L is PSPACE-hard, every K ∈ PSPACE satisfies K ≤p L ∈ NP, and NP is
-  closed under ≤p, so K ∈ NP. Hence PSPACE ⊆ NP; with NP ⊆ PSPACE this gives **NP = PSPACE**.
-- (⇐) If NP = PSPACE, then L ∈ PSPACE = NP, so the claim holds.
+#### Step 1 — L is PSPACE-hard
 
-So the claim is true **iff** NP = PSPACE — open, hence answer ג.
+Fix once and for all a satisfiable 3CNF formula, e.g. **θ_sat = (x ∨ x ∨ x)**, and define
+f(⟨A⟩) = ⟨θ_sat, A⟩.
 
-**Which listed facts follow.**
+Since S is *true* for θ_sat, the biconditional (S ⟺ U) reduces to U:
 
-| fact | follows? | why |
+  ⟨θ_sat, A⟩ ∈ L ⟺ (true ⟺ L(A) = Σ*) ⟺ L(A) = Σ* ⟺ ⟨A⟩ ∈ ALL_NFA
+
+f is computable in polynomial time — it copies the input and prepends a **constant** string. So
+**ALL_NFA ≤p L**, and since ALL_NFA is PSPACE-complete, **L is PSPACE-hard**. ∎
+
+*Two variants worth noticing (each gives hardness on its own):*
+- Fix an **unsatisfiable** θ_unsat (e.g. (x ∨ x ∨ x) ∧ (¬x ∨ ¬x ∨ ¬x)): then
+  ⟨θ_unsat, A⟩ ∈ L ⟺ L(A) ≠ Σ*, so **$\overline{ALL_{NFA}}$ ≤p L**. Also PSPACE-hardness, because
+  PSPACE is closed under complement.
+- Fix a **universal NFA** A_all (one state, self-loops on every letter, accepting), so U is true:
+  then ⟨θ, A_all⟩ ∈ L ⟺ θ ∈ 3SAT, giving **3SAT ≤p L** and NP-hardness — which PSPACE-hardness
+  already subsumes.
+
+#### Step 2 — L ∈ PSPACE
+
+On input ⟨θ, A⟩: decide whether θ is satisfiable (3SAT ∈ NP ⊆ PSPACE — or just try all assignments
+in polynomial space), decide whether L(A) = Σ* (ALL_NFA ∈ PSPACE, seen in class), and **accept iff
+the two answers agree**. Two PSPACE subroutines run in sequence, reusing the same space, plus O(1)
+bits to combine — so **L ∈ PSPACE**.
+
+With Step 1: **L is PSPACE-complete.**
+
+#### Step 3 — "L ∈ NP" is *equivalent* to NP = PSPACE
+
+- **(⇒)** Suppose L ∈ NP. Let K ∈ PSPACE be arbitrary. L is PSPACE-hard, so K ≤p L. NP is closed
+  under ≤p, and L ∈ NP, so K ∈ NP. Hence PSPACE ⊆ NP. Since NP ⊆ PSPACE always,
+  **NP = PSPACE**.
+- **(⇐)** Suppose NP = PSPACE. By Step 2, L ∈ PSPACE = NP, so the claim holds.
+
+So the claim holds **if and only if NP = PSPACE**, which is **open** ⟹ answer **ג**.
+
+#### Step 4 — which of the listed facts follow
+
+| fact | follows? | justification |
 |---|---|---|
-| **NP = PSPACE** | ✅ | Step 3 (⇒) directly |
-| **NP = coNP** | ✅ | PSPACE is closed under complement, so coNP = coPSPACE = PSPACE = NP |
-| P = NP | ❌ | NP = PSPACE is consistent with P ⊊ NP |
-| P ≠ NP | ❌ | also consistent with P = NP = PSPACE |
-| P = PSPACE | ❌ | would additionally need P = NP |
-| P = NL, L = NL | ❌ | nothing about the space classes below P is implied |
+| **NP = PSPACE** | ✅ **circle** | Step 3 (⇒), directly |
+| **NP = coNP** | ✅ **circle** | PSPACE is closed under complement, so coPSPACE = PSPACE. Taking complements in NP = PSPACE gives coNP = coPSPACE = PSPACE = NP |
+| P = NP | ❌ | NP = PSPACE says nothing about P; it is consistent with P ⊊ NP = PSPACE |
+| P ≠ NP | ❌ | equally consistent with P = NP = PSPACE |
+| P = PSPACE | ❌ | would need P = NP on top of NP = PSPACE |
+| P = NL | ❌ | nothing below P is touched |
+| L = NL | ❌ | likewise |
 
-**The trap in the "iff".** A biconditional between an easy-ish condition (3SAT, NP-complete) and a
-hard one (ALL_NFA, PSPACE-complete) inherits the **harder** side: fixing the easy side to a constant
-makes the biconditional *become* the hard side. Do not read "θ is satisfiable iff …" as making the
-language a mere NP question — the NFA universality half dominates.
+The NP = coNP derivation is the one most often missed. Spelled out: coNP ⊆ coPSPACE = PSPACE = NP,
+and symmetrically NP = PSPACE = coPSPACE ⊆ coNP. Both inclusions ⇒ NP = coNP. The step that makes it
+work is that **PSPACE is closed under complementation** (just flip the decider's answer — it always
+halts), which is exactly what NP is *not* known to satisfy.
+
+#### The two traps
+
+**Trap 1 — answering "ב. לא נכונה" because L is PSPACE-hard.** Tempting reasoning: *"L is
+PSPACE-complete, PSPACE is bigger than NP, so L ∉ NP, so the claim is false."* **Invalid.** We do
+not know that PSPACE is bigger than NP — NP ⊆ PSPACE is known, strictness is **open**. You can never
+prove a language is outside NP by showing it is PSPACE-hard; that would settle NP ≠ PSPACE. Marking
+ב here is claiming a major open problem is resolved.
+
+**Trap 2 — circling P = NP because 3SAT appears.** The presence of a 3CNF formula makes the NP world
+salient, but the formula is the *weak* half. Under the reduction it is frozen to a constant and
+contributes nothing; all the hardness flows from the NFA. The consequence is a collapse at the
+**NP/PSPACE** boundary, not at P/NP.
+
+#### The reusable lemma
+
+> **If L is 𝒞-complete and 𝒟 ⊆ 𝒞 is closed under ≤p, then "L ∈ 𝒟" ⟺ 𝒞 = 𝒟.**
+
+Every exam claim of the form "*this complete language belongs to that smaller class*" is therefore
+**equivalent to a class collapse**, and the answer is "unknown" exactly when the collapse is open.
+Instances across this archive:
+
+| claim | equivalent to | verdict |
+|---|---|---|
+| ⟨θ,A⟩-language ∈ NP (here) | NP = PSPACE | unknown |
+| ALL_NFA ≤p PATH (2025-1 moed A Q8.א) | P = PSPACE | unknown |
+| SAT ≤p POINT-SAT (2024 summer moed A Q7) | P = NP | unknown (the exam asked only for the implication) |
+
+So the exam skill is: **identify the completeness level of the language, identify the class named in
+the claim, and read off which collapse the claim is asserting.**
 
 ---
 
@@ -443,3 +575,22 @@ language a mere NP question — the NFA universality half dominates.
 - **Q1–Q4, Q8** — Left blank on the exam form; solved from scratch above. Q8.ב is the one most worth
   re-reading: the answer is **ג (unknown)** with **NP = PSPACE** *and* **NP = coNP** to be circled,
   because L is in fact PSPACE-complete.
+
+- **Q5 / Q8 (follow-up)** — Asked for (a) a dedicated study guide on the empty-language trap family,
+  (b) a from-definitions explanation of why L(M) is always RE and why RE ∩ coRE = R, and (c) a
+  detailed walkthrough of Q8. Resolved: created
+  `Study guide - empty-language traps (when a machine property is unsatisfiable).md` — it proves
+  L(M) ∈ RE by unfolding the definition of recognition (the misconception being that a machine
+  looping on non-members somehow disqualifies it), proves RE ∩ coRE = R in both directions with the
+  parallel-simulation argument spelled out, derives
+  RE ∩ (coRE ∖ R) = (RE ∩ coRE) ∖ R = ∅, tabulates every `L(M) ∈ 𝒞` condition by whether 𝒞 ∩ RE is
+  empty (flagging the near-misses: `L(M) ∈ coRE` is *not* trivial, it silently means `L(M) ∈ R`),
+  adds the bounded-computation family (a t-step computation reads only cells 1…t) and the dual
+  "every machine qualifies" family, and frames the whole pattern as Rice's non-triviality
+  hypothesis. The Q8 section above was expanded with the ≤_logspace definition, both proofs of
+  Q8.א (citation via NL-completeness of PATH, and the explicit layered run-graph with a worked
+  micro-example and the logspace budget analysis), the A_DFA/A_NFA/E_NFA/ALL_NFA/EQ_NFA family
+  table, and for Q8.ב the XNOR decomposition, three hardness variants, the NP = coNP derivation
+  spelled out, the two traps (marking "false" from PSPACE-hardness is claiming NP ≠ PSPACE;
+  circling P = NP because 3SAT appears), and the reusable
+  "𝒞-complete language ∈ 𝒟 ⟺ 𝒞 = 𝒟" lemma.
