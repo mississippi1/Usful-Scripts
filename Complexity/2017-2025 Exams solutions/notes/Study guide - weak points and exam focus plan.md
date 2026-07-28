@@ -216,6 +216,10 @@ the paper.
 - **NFA vs DFA:** the NFA **guesses a witness** and verifies locally (O(k²)); the DFA must store
   the whole first half (2^k). And **flipping accepting states does not complement an NFA** —
   multiple runs *and* dead ends both break it.
+- **The dead/trap state in subset construction** — recorded three separate times in the
+  handwritten notebook (as a standing reminder, as a missed ε-move, and as a red correction on a
+  DFA drawing). Subset construction must include ∅ as a reachable rejecting state; a DFA with a
+  missing outgoing edge is not a DFA. Cheap marks, repeatedly dropped.
 
 ---
 
@@ -322,3 +326,9 @@ papers already have their hard parts covered by notes. Low marginal value the ni
   frequency, and tiered the exam archive by error density, coverage gaps, and recency relative to a
   summer moed A. Largest cluster: reduction direction/resource bound (8 incidents). Costliest
   single trap: unsatisfiable-property questions (cost Q5 of the most recent paper).
+- **(2026-07-28)** Scanned the 51-page handwritten notebook — full index at
+  `Handwritten notebook - full scan index and mistakes.md`. It confirms W2 and W5 as the dominant
+  patterns (4 of its 6 crossed-out wrong answers are name-vs-definition or search-space
+  misjudgements), adds the dead/trap-state slip to W7, and surfaces **10 questions with no notes
+  doc at all** — `sort(L)`, `cyclic(L)`, `EXP_TM`, `ALT-SAT`, `E-SET-COVER`, `S-3-XOR-SAT`,
+  `2MON`, communication complexity, `L-Mix`, `ALL_DFA ≤L PATH̄`.
