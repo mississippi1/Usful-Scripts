@@ -240,8 +240,44 @@ equivalently, C1 ⊆ closure_r(C2), where closure_r(C2) is everything that ≤_r
 **Two facts decide every case.**
 
 *Fact 1 (real chain, all proven):* L ⊆ NL ⊆ P ⊆ NP ⊆ PSPACE ⊆ EXP ⊆ EXPSPACE. Whenever the source
-sits at or before the target in this chain, the statement is **TRUE** automatically (identity
-reduction — a language decides itself in O(log n) space).
+sits at or before the target in this chain, the statement is **TRUE** automatically, by the identity
+reduction.
+
+#### Proof that "smaller into bigger" is always true
+
+The statement C1 ≤_r C2 is: *for every* A ∈ C1, *there exists* B ∈ C2 with A ≤_r B. The existential is
+the whole game — you get to choose the target language.
+
+*Step 1 (reflexivity).* id(x) = x is computable by a log-space transducer: read-only input tape,
+write-only output tape, copy symbols as the head sweeps right, O(1) work space. And x ∈ A ⟺ id(x) ∈ A
+by inspection. So **A ≤L A and A ≤p A for every language A**, with no assumptions on A.
+
+*Step 2 (apply containment).* Let A ∈ C1. Since C1 ⊆ C2, A ∈ C2. Take B := A. Then B ∈ C2 and
+A ≤_r B. ∎
+
+So the real theorem is: **if C1 ⊆ C2 then C1 ≤_r C2, for any reduction notion whose function class
+contains the identity** (≤L, ≤p, ≤m, ≤T, AC⁰ — i.e. all of them). "Smaller into bigger" is a fact about
+*inclusions* wearing a reduction as a costume; every ounce of content is in the six chain proofs:
+
+| Inclusion | Argument |
+|---|---|
+| L ⊆ NL | A deterministic machine is a nondeterministic one that never branches. |
+| NL ⊆ P | Config graph has 2^O(log n) = poly(n) nodes; BFS it in poly time. |
+| P ⊆ NP | Ignore the certificate. |
+| NP ⊆ PSPACE | Enumerate all 2^poly certificates, **reusing** the same poly space each time. |
+| PSPACE ⊆ EXP | Only 2^O(poly) configurations exist ⟹ a halting poly-space machine runs in 2^O(poly) time. |
+| EXP ⊆ EXPSPACE | A machine running in time t touches at most t cells. |
+
+*Two caveats.*
+
+1. The identity reduction dodges the non-triviality trap that the constant-output lemma (Fact 2 below)
+   suffers: it never emits a hard-coded string, so it works even for B = ∅ or Σ*.
+2. **Watch the quantifier order.** If the question instead asks for a *single* B ∈ C2 that *all* of C1
+   reduces to, B := A is illegal (B must be fixed before A is quantified). That version asks for a
+   C1-hard language inside C2, i.e. essentially a C1-complete problem under ≤_r — true for NL (PATH),
+   P (CVP), NP (SAT), PSPACE (TQBF), EXP; but for C1 = L under ≤L there are no known ≤L-complete
+   problems, exactly the "reduction as strong as the class" collapse discussed above. Under ≤p, any
+   non-trivial language in L works via the constant-output lemma.
 
 *Fact 2 (closure):* closure_L(C)=C for every class here (all closed under ≤L, unconditionally).
 closure_p(C)=C for C ∈ {P,NP,PSPACE,EXP,EXPSPACE} (standard). But **closure_p(L) = closure_p(NL) = P**
