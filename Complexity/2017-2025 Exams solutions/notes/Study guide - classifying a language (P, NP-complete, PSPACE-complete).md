@@ -273,9 +273,17 @@ Only source-after-target ("backward") cells are shown; everything else is TRUE b
 | NP | ≤L/≤p UNKNOWN (both reduce to "NP⊆P?") | ≤L/≤p UNKNOWN (same) | **≤L/≤p UNKNOWN — the P vs NP question itself** | — | — | — |
 | PSPACE | **≤L FALSE** (L⊊PSPACE proven) · ≤p UNKNOWN (PSPACE⊆P? open) | **≤L FALSE** (NL⊊PSPACE proven) · ≤p UNKNOWN | ≤L/≤p UNKNOWN (P vs PSPACE) | ≤L/≤p UNKNOWN (NP vs PSPACE) | — | — |
 | EXP | **≤L/≤p FALSE** (L⊊PSPACE⊆EXP) | **≤L/≤p FALSE** (NL⊊PSPACE⊆EXP) | **≤L/≤p FALSE** (P⊊EXP proven directly) | ≤L/≤p UNKNOWN (NP = EXP? open) | ≤L/≤p UNKNOWN (PSPACE vs EXP) | — |
+| EXPSPACE | **≤L/≤p FALSE** (L⊆PSPACE⊊EXPSPACE) | **≤L/≤p FALSE** (NL⊆PSPACE⊊EXPSPACE) | **≤L/≤p FALSE** (P⊆PSPACE⊊EXPSPACE) | **≤L/≤p FALSE** (NP⊆PSPACE⊊EXPSPACE) | **≤L/≤p FALSE** (PSPACE⊊EXPSPACE proven directly) | ≤L/≤p UNKNOWN — *equivalent to P vs PSPACE* (padding) |
 
-EXPSPACE never appears as a source in this table (it is the largest class considered, so every row
-against it is the trivial TRUE case).
+Note the EXPSPACE row is not trivial: EXPSPACE is the largest class here, so **every** one of its cells is
+backward, and five of the six are FALSE. In particular `EXPSPACE ≤_r NP` is the **only FALSE cell in the
+whole grid whose target is NP** — it does not come from an NP-specific separation (NP vs EXP is open) but
+from routing NP through PSPACE: NP ⊆ PSPACE ⊊ EXPSPACE. Same trick supplies the P and L/NL cells of this
+row; only `PSPACE` is refuted by the hierarchy theorem directly.
+
+The last cell is the one to state precisely: `EXP = EXPSPACE ⟺ P = PSPACE` (pad an instance of a PSPACE
+problem out to exponential length and back). So that cell is not merely "open" — it is the *same* open
+problem as the `PSPACE → P` cell two rows up, which is a nice consistency check on the whole table.
 
 ### The pattern to remember
 
