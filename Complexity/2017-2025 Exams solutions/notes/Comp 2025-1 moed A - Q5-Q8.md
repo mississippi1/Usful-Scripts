@@ -91,6 +91,18 @@ P = PSPACE is open (believed false, unproven), so the claim's truth is **unknown
 (P ⊆ NP ⊆ PSPACE = P): the claim entails **P = PSPACE ⇒ P = NP ⇒ NP = coNP ⇒ NP = PSPACE**. It does
 **not** entail L = NL, and it is inconsistent with **P ≠ NP**.
 
+**The checklist the exam asks for** (having chosen ג, mark and prove every consequence; unmarked
+facts need no justification):
+
+| Fact on the list | Mark? | Proof |
+|---|---|---|
+| `P = PSPACE` | ✅ | ALL_NFA ≤p PATH ⇒ ALL_NFA ∈ P (PATH ∈ NL ⊆ P, P closed under ≤p); ALL_NFA PSPACE-complete ⇒ every L ∈ PSPACE has L ≤p ALL_NFA ≤p PATH ⇒ L ∈ P ⇒ PSPACE ⊆ P; with P ⊆ PSPACE, equality. |
+| `P = NP` | ✅ | `P ⊆ NP ⊆ PSPACE = P`, so all three coincide. |
+| `NP = coNP` | ✅ | From P = NP: `coNP = coP = P = NP` (P is closed under complement — flip the decider's answer). |
+| `NP = PSPACE` | ✅ | `NP ⊆ PSPACE = P ⊆ NP`. |
+| `P ≠ NP` | ❌ | The claim implies P = NP, i.e. the negation of this fact. |
+| `L = NL` | ❌ | Not implied. The reduction is **time**-bounded; nothing collapses the logspace classes, and P = PSPACE is not known to imply L = NL. |
+
 **Why the Space-Hierarchy "impossibility" argument is wrong — and where it is right.** The tempting wrong
 proof: "PATH is NL-ish, ALL_NFA needs poly space, and NL ⊊ PSPACE by the Space Hierarchy Theorem, so the
 reduction is impossible ⇒ false." The flaw: **a ≤p reduction is time-bounded, not space-bounded** — it may
@@ -188,6 +200,14 @@ inside L, and an NL-complete problem sitting in L is exactly the statement L = N
   no contradiction) plus a new poly-*time* bound ⇒ P = PSPACE, not NL = PSPACE. The Space Hierarchy
   (NL ⊊ PSPACE) is never touched. Only under ≤_L (NL *is* closed) does PATH's cheapness reach NL and
   trigger the contradiction — which is why the logspace version is provably false.
+
+- **Q8.א (follow-up 3)** — Re-asked from the exam scan with **ג already circled**; the open part was
+  the checklist: *which* facts from the printed list must be marked and proved. Resolved: mark
+  **P = NP, NP = coNP, NP = PSPACE, P = PSPACE**; leave **P ≠ NP** (the claim implies its negation)
+  and **L = NL** (not implied — the reduction is time-bounded, so nothing collapses the logspace
+  classes) unmarked. Proof chain to write on the exam: ALL_NFA ≤p PATH ⇒ ALL_NFA ∈ P ⇒ (PSPACE-
+  completeness + transitivity of ≤p) PSPACE ⊆ P ⇒ P = PSPACE ⇒ P = NP ⇒ NP = coNP, and NP = PSPACE
+  by sandwiching. A checklist table was added to the Q8.א section.
 
 - **Q8.ג** — Got the **L vs NL containment backwards**: I thought "LOGSPACE contains NL." The correct
   direction is **L ⊆ NL** (deterministic logspace ⊆ nondeterministic logspace), with equality open.
