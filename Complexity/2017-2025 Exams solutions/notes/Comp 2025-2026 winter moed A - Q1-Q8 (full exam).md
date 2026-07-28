@@ -482,6 +482,50 @@ bits to combine — so **L ∈ PSPACE**.
 
 With Step 1: **L is PSPACE-complete.**
 
+##### Why ALL_NFA ∈ PSPACE (the fact Step 2 leans on)
+
+**The naive approach fails.** Determinizing A by the subset construction and looking for a reachable
+non-accepting state is correct but writes down up to **2ⁿ states** (n = |Q|) — exponential *space*,
+so it only gives ALL_NFA ∈ EXPSPACE. The fix is the standard one for this family: **never build the
+subset automaton, walk it one state at a time.** A single subset S ⊆ Q is only **n bits**; it is the
+*collection* of subsets that is exponential, and it is never needed.
+
+**Complement, guess, Savitch.** Work with
+$\overline{ALL_{NFA}}$ = "some word is rejected", since the witness can be guessed letter by letter.
+Nondeterministic algorithm on ⟨A⟩:
+
+1. S ← ε-closure({q₀}).
+2. Repeat at most 2ⁿ times:
+   - if **S ∩ F = ∅**, **accept** (the word guessed so far is rejected, so L(A) ≠ Σ*);
+   - otherwise guess σ ∈ Σ and set S ← ε-closure(δ(S, σ)).
+3. Reject.
+
+*Space:* S is n bits, the counter to 2ⁿ is n bits, the closure update is in-place with O(n) scratch —
+**O(n)** total, polynomial since |⟨A⟩| ≥ n.
+
+*Why 2ⁿ iterations suffice:* if L(A) ≠ Σ*, take a **shortest** rejected word w. Every subset along
+its run is distinct — a repeat would let you excise the loop and get a shorter word ending at the
+same non-accepting subset, contradicting minimality. With only 2ⁿ subsets, |w| < 2ⁿ.
+
+*Finishing:* $\overline{ALL_{NFA}} ∈ \mathrm{NSPACE}[O(n)] ⊆ \mathrm{NPSPACE} \overset{\text{Savitch}}{=} \mathrm{PSPACE}$
+(formula sheet Theorem 7 — O(n) becomes O(n²), still polynomial), and PSPACE is closed under
+complement (flip a halting decider's answer), so **ALL_NFA ∈ PSPACE**. ∎
+
+**Same proof without nondeterminism.** Apply Savitch's *reachability procedure* directly: "is some
+non-accepting subset reachable from the initial subset?" is s–t reachability in a graph whose 2ⁿ
+nodes are each named by n bits, with edges checkable on the fly from ⟨A⟩. The recursive midpoint
+search uses O(log²N) space for N nodes; here log N = n, giving **O(n²)**. The graph is exponential
+but you only ever hold a recursion stack of depth n with n bits per frame.
+
+**Why the NFA is what makes this hard.** ALL_DFA is in **NL** — a DFA rejects w iff its *unique* run
+ends outside F, so "some word is rejected" is plain reachability of a non-accepting state. For an
+NFA, "w is rejected" means **every** run on w fails, and that universal quantifier over runs is
+exactly what the subset construction computes. Hence universality jumps to PSPACE-complete while
+membership (Q8.א's A_NFA) stays at NL: **one run is cheap, all runs is expensive.**
+
+*(PSPACE-hardness of ALL_NFA is a separate argument — reduce from a generic polynomial-space machine
+via encodings of rejected computation histories. Q8.ב only uses membership.)*
+
 #### Step 3 — "L ∈ NP" is *equivalent* to NP = PSPACE
 
 - **(⇒)** Suppose L ∈ NP. Let K ∈ PSPACE be arbitrary. L is PSPACE-hard, so K ≤p L. NP is closed
@@ -594,3 +638,16 @@ the claim, and read off which collapse the claim is asserting.**
   spelled out, the two traps (marking "false" from PSPACE-hardness is claiming NP ≠ PSPACE;
   circling P = NP because 3SAT appears), and the reusable
   "𝒞-complete language ∈ 𝒟 ⟺ 𝒞 = 𝒟" lemma.
+
+- **Q8.ב (follow-up)** — Asked **why ALL_NFA ∈ PSPACE**, which Step 2 had cited without proof.
+  Added the subsection "Why ALL_NFA ∈ PSPACE" above. Key points: the naive determinize-then-check
+  approach writes 2ⁿ states and only gives EXPSPACE; the fix is to **walk the subset automaton one
+  subset at a time** (each subset is n bits — it is the *collection* that is exponential, and it is
+  never needed). Guess the rejected word letter by letter in NSPACE[O(n)], bounding the search at
+  2ⁿ steps because a shortest rejected word visits distinct subsets, then apply **Savitch**
+  (NPSPACE = PSPACE) and closure of PSPACE under complement. Equivalent packaging: apply Savitch's
+  recursive reachability directly to the implicit 2ⁿ-node subset graph for O(n²) space. The
+  contrast that explains the whole family: **ALL_DFA ∈ NL** because a DFA has one run per word, so
+  "some word is rejected" is plain reachability, whereas for an NFA "w is rejected" quantifies over
+  **all** runs — the subset construction is what evaluates that quantifier, and it is why
+  universality is PSPACE-complete while membership (Q8.א) stays NL.
