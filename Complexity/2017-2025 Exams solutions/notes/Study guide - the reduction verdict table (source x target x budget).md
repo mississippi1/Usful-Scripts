@@ -222,8 +222,18 @@ The two cells people get wrong:
 
 **Then, for the below-diagonal cells, three steps:**
 
-1. Write `closure_r(C₂)` — the **only** step where the budget matters. Is the target `L` or `NL`,
-   and is the budget `≤p`? Then write **P** instead.
+1. Write `closure_r(C₂)` — the **only** step where the budget matters. Read it off by budget:
+
+   | budget | what to write for `closure_r(C₂)` |
+   |---|---|
+   | `≤L` | `C₂` unchanged, always |
+   | `≤p` | `C₂` unchanged — **except `L` and `NL`, which both become `P`** |
+   | `≤m` | **`R`** if `C₂` is any decidable class; `RE` if `C₂ = RE`; `coRE` if `C₂ = coRE` |
+
+   ⚠️ **`≤m` is not "≤p with a bigger exception list" — it flattens everything.** If the budget is
+   `≤m` and both languages are decidable, you are already done: `C₁ ⊆ R` holds for every decidable
+   `C₁`, so the answer is **TRUE** and you never reach steps 2–3. An `≤m` question only has
+   content when a language is **undecidable** (Grid D).
 2. State the claim as the inclusion `C₁ ⊆ closure_r(C₂)`.
 3. Run the interval test. Fits a proven separation ⟹ **FALSE**, cite it. Otherwise ⟹
    **UNKNOWN**, and **name the open problem** — the papers award marks for naming it.
