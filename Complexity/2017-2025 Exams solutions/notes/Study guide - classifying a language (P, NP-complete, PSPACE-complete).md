@@ -332,6 +332,49 @@ problem as the `PSPACE → P` cell two rows up, which is a nice consistency chec
    NL and P (whose containment in L/NL is individually open) flip to TRUE under ≤p, while EXP — which
    is *provably* outside P — stays FALSE regardless of reduction type.
 
+### The interval test (use this instead of comparing endpoints)
+
+Point 2 above is the one that goes wrong under time pressure. The failure mode: see `EXPSPACE ≤_r NP`,
+recall that NP vs PSPACE, PSPACE vs EXP and EXP vs EXPSPACE are all open, conclude UNKNOWN. Wrong — it
+is FALSE.
+
+**Why the instinct misfires: none of the four proven separations is an adjacent pair.** Each one jumps
+over at least one class:
+
+| Separation | Classes strictly between the endpoints |
+|---|---|
+| L ⊊ PSPACE | NL, P, NP |
+| NL ⊊ PSPACE | P, NP |
+| P ⊊ EXP | NP, PSPACE |
+| PSPACE ⊊ EXPSPACE | EXP |
+
+Not a coincidence: a hierarchy theorem compares a resource against more of the *same* resource (space vs
+space, time vs time), and this chain alternates space- and time-defined classes, so the endpoints of any
+hierarchy separation always have something between them. Consequence: **a proven separation can sit
+inside a span whose every individual step is open.** PSPACE ⊊ EXPSPACE lives inside the span NP…EXPSPACE
+even though all three steps NP|PSPACE, PSPACE|EXP, EXP|EXPSPACE are unresolved.
+
+**The asymmetry to internalise:** separations propagate outward when the span widens (shrink the target
+or grow the source and the witness language stays a witness); *openness does not*. So "the narrow
+question is open" is never evidence about the wider question.
+
+**The test.** Memorise the four separations as intervals: `[L,PSPACE] [NL,PSPACE] [P,EXP] [PSPACE,EXPSPACE]`.
+For a backward item C1 ≤_r C2, form the span [C2, C1] and ask: *does some interval [X,Y] fit inside it,
+i.e. C2 ⊆ X and Y ⊆ C1?* Yes ⟹ **FALSE**. No ⟹ **UNKNOWN** (name the open problem). For ≤p, first
+replace an L or NL target by P (closure_p), then run the same test.
+
+| Item | Span | Interval that fits | Verdict |
+|---|---|---|---|
+| EXPSPACE ≤_r NP | [NP, EXPSPACE] | [PSPACE, EXPSPACE] ✓ | **FALSE** |
+| EXP ≤_r NP | [NP, EXP] | none ([P,EXP] would need NP ⊆ P) | UNKNOWN (P vs NP) |
+| EXP ≤_r P | [P, EXP] | [P, EXP] ✓ | **FALSE** |
+| PSPACE ≤_r P | [P, PSPACE] | none | UNKNOWN |
+| PSPACE ≤p L | [P, PSPACE] | none | UNKNOWN |
+| EXP ≤p L | [P, EXP] | [P, EXP] ✓ | **FALSE** |
+| EXPSPACE ≤p L | [P, EXPSPACE] | [P, EXP] ✓ | **FALSE** |
+
+One rule, both reduction types, every backward cell of the grid.
+
 ## Worked instances elsewhere in these notes
 
 - `Comp 2025 summer moed A - Q9 (half-Hamiltonian path).md` — fraction-of-n threshold ⟹ NP-complete
@@ -402,3 +445,23 @@ Track here which parts gave trouble, and how they were resolved.
   spans four adjacent links) does NOT let you conclude any specific narrower sub-link (e.g. L vs NL)
   is strict — that remains fully open; only a DIRECTLY proven strict pair (or one chainable from it via
   ⊊ then ⊆) licenses a FALSE verdict.
+- **Class-vs-class grid — "smaller into bigger is trivially true", why?** Asked for a general proof
+  rather than the assertion. Resolved by separating the two steps: (1) the identity map is log-space
+  computable and satisfies x ∈ A ⟺ id(x) ∈ A, so A ≤L A and A ≤p A for *every* language with no
+  assumptions; (2) for A ∈ C1 ⊆ C2, pick the witness B := A. The general theorem is therefore
+  "C1 ⊆ C2 ⟹ C1 ≤_r C2 for any reduction notion containing the identity" — a fact about *inclusions*,
+  not about reductions; all the real content is in the six chain-inclusion proofs. Also recorded: the
+  identity reduction avoids the non-triviality caveat that the constant-output lemma carries, and the
+  ∃B∀A reading (a single B serving all of C1) is genuinely non-trivial — it asks for a C1-hard language
+  inside C2. Written up under Fact 1.
+- **Class-vs-class grid — the EXPSPACE row and the NP-target trap.** Two errors caught and fixed. First,
+  the grid claimed EXPSPACE never appears as a source "because it is the largest class"; that is
+  inverted — being largest makes *every* one of its cells backward, and five of six are FALSE. Second,
+  and the more expensive one under time pressure: `EXPSPACE ≤_r NP` reads as UNKNOWN if you compare
+  endpoints (NP vs PSPACE, PSPACE vs EXP, EXP vs EXPSPACE are all open), but it is FALSE via
+  NP ⊆ PSPACE ⊊ EXPSPACE. Root cause identified: **none of the four proven separations is an adjacent
+  pair** — each straddles at least one intermediate class, because hierarchy theorems compare a resource
+  against more of the same resource while the chain alternates space and time classes. So a proven
+  separation can sit inside a span built entirely from open steps. Resolved with the **interval test**
+  (memorise the four separations as intervals, ask whether one fits inside the span [target, source]
+  rather than comparing endpoints), which decides every backward cell for both ≤L and ≤p.
