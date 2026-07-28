@@ -125,7 +125,8 @@ hierarchy.** The mechanism is how far membership travels across a reduction:
 
 > If A ≤ᵣ B and B ∈ 𝒞, then A ∈ 𝒞 **only when 𝒞 is closed under ≤ᵣ**.
 
-P is closed under ≤p; **NL is not**. So from ALL_NFA ≤p PATH and PATH ∈ NL ⊆ P you may only infer
+P is closed under ≤p; **NL is not** (precisely: NL closed under ≤p ⟺ NL = P — see the anatomy
+subsection below). So from ALL_NFA ≤p PATH and PATH ∈ NL ⊆ P you may only infer
 ALL_NFA ∈ **P** — *not* ALL_NFA ∈ NL. PATH's low space does **not** propagate backward across a
 poly-*time* reduction. Trace the actual cost: to decide ALL_NFA you (1) run f to *build* the PATH
 instance ⟨G,s,t⟩, then (2) solve PATH. Step 2 is cheap *in |G|*, but step 1 runs in poly time and may
@@ -135,6 +136,64 @@ contradiction), adding only a *time* bound; no PSPACE computation is ever cramme
 why the consequence is P = PSPACE (time = space), never NL = PSPACE. Under **≤_L**, by contrast, NL *is*
 closed, so PATH's cheapness *does* travel all the way down (ALL_NFA ∈ NL ⇒ NL = PSPACE), which is exactly
 the contradiction that makes the logspace version provably false.
+
+#### Full anatomy of the trap (the three budgets, and the closure bridge)
+
+**(1) What the claim asserts.** "There exists f : Σ* → Σ*, computable in poly **time**, with
+⟨N⟩ ∈ ALL_NFA ⟺ f(⟨N⟩) ∈ PATH." The budget constrains **f's own computation** — not any decider for
+ALL_NFA, not any decider for PATH. Three independent budgets (the map's, the source's, the target's);
+the wrong answer merges them into one.
+
+**(2) The only bridge from "a reduction exists" to a class statement is closure**, and closure is a
+theorem that must be proved by showing the composition "run f, then run B's decider" fits the class's
+budget:
+
+| Closure | Available? | Composition argument |
+|---|---|---|
+| **P under ≤p** | ✔ theorem | f runs in p(n) ⇒ \|f(x)\| ≤ p(n) (one symbol written per step); B's decider costs q(p(n)); polynomials compose ⇒ total poly. |
+| **NL under ≤p** | ✘ **unavailable** | Closure here is *equivalent to NL = P*: for nontrivial A ∈ P, A ≤p PATH by "decide A, emit a canned yes/no instance", so closure ⇒ P ⊆ NL ⊆ P. Assuming it silently assumes NL = P (open, believed false). |
+| **NL under ≤_L** | ✔ theorem | Cannot *store* f(x) (poly-size); instead **recompute on demand** — rerun f from scratch whenever B asks for its i-th input bit, keeping only a counter. O(log n) for f + O(log n) counter + O(log\|f(x)\|) = O(log n) for B. |
+
+So "NL is not closed under ≤p" is best stated sharply: it is not *known* to be, and knowing it would
+settle NL vs P. Either way the step is unusable in a proof.
+
+**(3) The sub-fallacy that powers the mistake.** "PATH costs O(log\|G\|) space, and \|G\| = poly(n), so
+log\|G\| = O(log n) — I just solved a PSPACE-complete problem in logspace!" Every equality there is
+correct; the error is **omitting the cost of producing G**:
+
+| Stage of the composed ALL_NFA decider | Time | Space |
+|---|---|---|
+| build G = f(⟨N⟩) | poly(n) | **poly(n)** — the output must be written down |
+| run the NL algorithm on G | poly(n) | O(log \|G\|) = O(log n) |
+| **total** | poly(n) | **poly(n)** |
+
+The intermediate string sits on a work tape and counts. Result: ALL_NFA ∈ P (*new* — a time bound) and
+ALL_NFA ∈ PSPACE (*old news* — it was PSPACE-complete). Under ≤_L the space column changes precisely
+because G is never stored — which is the entire difference between the two versions.
+
+**(4) What the Space Hierarchy Theorem can do.** It yields a **class inequality** (NL ⊊ PSPACE via
+Savitch: NL ⊆ SPACE(log²n) ⊊ SPACE(n) ⊆ PSPACE), never a statement about the existence of a *map*.
+The full chain needed to refute a reduction is:
+
+```
+reduction exists --[𝒞 closed under ≤ᵣ]--> A ∈ 𝒞 --[A is 𝒞'-complete]--> 𝒞' ⊆ 𝒞 --[hierarchy]--> ⊥
+```
+
+The hierarchy theorem is only the **last** link; drop the closure link and the chain never reaches it.
+
+**(5) Smell test.** The claim is *equivalent* to P = PSPACE, so a valid proof of "false" would be a
+three-line proof that P ≠ PSPACE. Any short argument that settles a famous open problem is wrong.
+
+**(6) Where the hierarchy does bite** — a free corollary: **if P = PSPACE then NL ≠ P** (else
+NL = P = PSPACE, contradicting NL ⊊ PSPACE). So the claim, if true, separates NL from P; the hierarchy
+theorem still earns its keep, one level below where the wrong answer aimed it.
+
+**(7) The rule to memorize.** *A reduction transfers a bound only as low as the reduction's own budget.*
+When the reduction's budget is **at least** the target class's budget, the reduction can solve the
+source itself and emit a canned instance, so `A ≤p (nontrivial B ∈ P)` degenerates to `A ∈ P` — the
+target's identity is irrelevant, only its class is. Exam procedure: (i) name the reduction's budget;
+(ii) name the target's class; (iii) ask whether that class is closed under *that* budget; (iv) only
+then reach for a hierarchy theorem.
 
 ### Q8.ג (9 pts) — claim: K ∈ LOGSPACE
 
@@ -208,6 +267,15 @@ inside L, and an NL-complete problem sitting in L is exactly the statement L = N
   classes) unmarked. Proof chain to write on the exam: ALL_NFA ≤p PATH ⇒ ALL_NFA ∈ P ⇒ (PSPACE-
   completeness + transitivity of ≤p) PSPACE ⊆ P ⇒ P = PSPACE ⇒ P = NP ⇒ NP = coNP, and NP = PSPACE
   by sandwiching. A checklist table was added to the Q8.א section.
+
+- **Q8.א (follow-up 4)** — Asked for a detailed breakdown of *why* the Space-Hierarchy answer (ב) is
+  the tempting wrong one. Resolved with a new "Full anatomy of the trap" subsection: the three
+  independent budgets (map / source / target); closure as the only bridge, with the composition proofs
+  for P-under-≤p (polynomials compose), NL-under-≤p (**unavailable — equivalent to NL = P**, sharper
+  than "false"), and NL-under-≤_L (recompute f's output bits on demand instead of storing them); the
+  space-accounting table showing the omitted cost of *writing* G; the observation that the hierarchy
+  theorem is only the last link of a four-link chain; the smell test (a valid "false" proof would prove
+  P ≠ PSPACE); and the corollary that P = PSPACE ⇒ NL ≠ P, i.e. where the hierarchy actually applies.
 
 - **Q8.ג** — Got the **L vs NL containment backwards**: I thought "LOGSPACE contains NL." The correct
   direction is **L ⊆ NL** (deterministic logspace ⊆ nondeterministic logspace), with equality open.
