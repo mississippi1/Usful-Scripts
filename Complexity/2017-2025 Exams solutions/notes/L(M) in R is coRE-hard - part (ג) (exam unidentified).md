@@ -159,6 +159,48 @@ degree-theoretic guarantee, not a construction worth writing.)*
 
 ---
 
+## L is RE-hard as well (not asked, but worth knowing)
+
+The question asks only for coRE-hardness, but **A_TM ≤m L** holds too, so L is hard for *both*
+classes. Given ⟨M,w⟩, let M′ on input x **dovetail** two threads:
+
+- (a) simulate M on w; if it accepts, accept x;
+- (b) test x ∈ A_TM (parse x = ⟨N,y⟩ and simulate N on y); if so, accept x.
+
+Then:
+
+- **M accepts w** ⇒ thread (a) eventually accepts every x ⇒ L(M′) = Σ* ∈ R ⇒ ⟨M′⟩ ∈ L
+- **M does not accept w** ⇒ thread (a) never fires ⇒ L(M′) = A_TM ∉ R ⇒ ⟨M′⟩ ∉ L
+
+So A_TM ≤m L, i.e. **L is RE-hard**. Combined with the coRE-hardness above, L is hard for RE and for
+coRE simultaneously — exactly what you expect of a language sitting far above both (Σ⁰₃-complete).
+coRE-hardness is just the slice the question happens to ask for.
+
+*(Note the polarity flip between the two reductions: for coRE-hardness the "good" case is the one
+where M **fails** to halt, giving L(M′) = ∅; for RE-hardness the "good" case is where M **succeeds**,
+giving L(M′) = Σ*. Both use a trivial decidable language on the yes-side and A_TM on the no-side.)*
+
+---
+
+## The contrast that matters most — { ⟨M⟩ : L(M) ∈ coRE ∖ R } is trivial
+
+These two look nearly identical and land at opposite extremes:
+
+| language | answer |
+|---|---|
+| { ⟨M⟩ : L(M) ∈ **R** } (this doc) | RE-hard **and** coRE-hard; far outside RE ∪ coRE |
+| { ⟨M⟩ : L(M) ∈ **coRE ∖ R** } (Comp 2025-2026 moed A Q5) | **R** — the language is **∅** |
+
+The first is a genuine non-trivial semantic property: ∅ ∈ R and A_TM ∉ R give the two witnesses Rice
+requires. The second is **unsatisfiable**, because L(M) ∈ RE always and RE ∩ coRE = R, so
+`coRE ∖ R` is empty once restricted to languages of the form L(M).
+
+**Produce the two witnesses before proving anything** — that single check separates these two cases
+and costs ten seconds. See
+`Study guide - empty-language traps (when a machine property is unsatisfiable).md`.
+
+---
+
 ## Where this language really sits
 
 coRE-hard is a **weak** lower bound here. "L(M) is decidable" is the index set REC, which is
@@ -209,3 +251,16 @@ the exam is asking only for the one reduction.
   Ā_TM ≤m ALL_TM, and it works there because a finite length-threshold language is not Σ*. It fails
   against "L(M) ∈ R" because that same finite language *is* decidable. The gadget is sound and
   reusable — it just needs a target property that length thresholds can distinguish.
+
+- **Part (ג) (follow-up 3)** — Asked for a full walkthrough of the coRE-hardness argument. Two
+  sections added above. (1) **L is RE-hard too**: A_TM ≤m L via an M′ that dovetails "simulate M on
+  w, accept x if it accepts" with "accept x iff x ∈ A_TM", giving L(M′) = Σ* ∈ R when M accepts w
+  and L(M′) = A_TM ∉ R otherwise — so L is hard for RE and coRE simultaneously, as expected of a
+  Σ⁰₃-complete language; coRE-hardness is only the slice the question asks for. Note the polarity
+  flip between the two reductions: coRE-hardness puts the *decidable* language on the
+  non-halting side, RE-hardness on the halting side. (2) **The contrast with
+  { ⟨M⟩ : L(M) ∈ coRE ∖ R }** (Comp 2025-2026 moed A Q5), which is trivially **R** because L(M) is
+  always RE and RE ∩ coRE = R — nearly identical phrasing, opposite extremes, separated by the
+  ten-second check of producing the two Rice witnesses. Also re-emphasized in the walkthrough that
+  the reduction f never runs M on w; it only *writes source code* for M′ by plugging the fixed
+  strings ⟨M⟩ and w into a template, which is why f is total and computable.
