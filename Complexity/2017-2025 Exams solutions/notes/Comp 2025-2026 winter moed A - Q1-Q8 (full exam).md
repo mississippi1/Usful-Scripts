@@ -526,6 +526,47 @@ membership (Q8.א's A_NFA) stays at NL: **one run is cheap, all runs is expensiv
 *(PSPACE-hardness of ALL_NFA is a separate argument — reduce from a generic polynomial-space machine
 via encodings of rejected computation histories. Q8.ב only uses membership.)*
 
+##### Why not just reduce ALL_NFA to $\overline{PATH}$?
+
+Very natural attempt, and it *almost* works. In the subset automaton, L(A) = Σ* iff **no** subset S
+with S ∩ F = ∅ is reachable from S₀ — a **non-reachability** question, i.e. literally
+$\overline{PATH}$. And since **coNL = NL** (Immerman–Szelepcsényi), $\overline{PATH}$ is NL-complete
+just like PATH. So the argument appears to prove ALL_NFA ∈ NL — impossible, since ALL_NFA is
+PSPACE-complete and NL ⊊ PSPACE by the space hierarchy theorem.
+
+**What breaks: a reduction must *write down* its output.** The subset graph has 2ⁿ nodes and up to
+2ⁿ·|Σ| edges, so the output string is exponentially long. But
+
+- a **logspace** transducer has polynomially many configurations, so if it halts it runs in
+  polynomial time, and therefore emits at most **polynomially many output symbols**;
+- a **poly-time** reduction is bounded the same way (output length ≤ running time).
+
+So "build the subset graph and ask $\overline{PATH}$" is a correct *mathematical characterization* of
+ALL_NFA but **not a reduction** under ≤_L or ≤_p — the function is well defined, just not computable
+within the budget. And no repair is possible: ALL_NFA ≤_L $\overline{PATH}$ would give
+ALL_NFA ∈ NL (NL is closed under ≤_L and $\overline{PATH}$ ∈ NL), contradicting NL ⊊ PSPACE.
+
+**Complementing the target buys nothing in general.** P is closed under complement, so
+$\overline{PATH}$ ∈ P exactly as PATH is, and hence
+ALL_NFA ≤p $\overline{PATH}$ ⟺ ALL_NFA ∈ P ⟺ P = PSPACE — the *same* verdict as the PATH version
+(Comp 2025-1 moed A Q8.א). Whenever the target class is closed under complement, reducing to a
+language or to its complement is equally (un)helpful; only the target's **class** matters, never its
+polarity.
+
+**But the idea is exactly right — it *is* the PSPACE proof.** The on-the-fly subset walk above is a
+reachability search on that same exponential graph. An **algorithm** may explore a graph it never
+materializes; a **reduction** must hand the graph over. Savitch does reachability on N nodes in
+O(log²N) space, and with N = 2ⁿ that is O(n²) — precisely the polynomial space in the proof.
+
+> **You can search the subset graph. You just can't write it down.**
+
+**The unifying comparison with Q8.א** — same technique, only the graph size differs:
+
+| problem | graph built | size | can a reduction emit it? |
+|---|---|---|---|
+| **A_NFA** (Q8.א) | run graph, nodes (q, i) | \|Q\|·(n+1) + 2 — **polynomial** | ✅ yes → **A_NFA ≤_logspace PATH** |
+| **ALL_NFA** | subset graph, nodes S ⊆ Q | 2^\|Q\| — **exponential** | ❌ no → must **simulate** the search instead |
+
 #### Step 3 — "L ∈ NP" is *equivalent* to NP = PSPACE
 
 - **(⇒)** Suppose L ∈ NP. Let K ∈ PSPACE be arbitrary. L is PSPACE-hard, so K ≤p L. NP is closed
@@ -651,3 +692,18 @@ the claim, and read off which collapse the claim is asserting.**
   "some word is rejected" is plain reachability, whereas for an NFA "w is rejected" quantifies over
   **all** runs — the subset construction is what evaluates that quantifier, and it is why
   universality is PSPACE-complete while membership (Q8.א) stays NL.
+
+- **Q8.ב (follow-up 2)** — Asked why ALL_NFA can't simply be reduced to **$\overline{PATH}$**, given
+  that "L(A) = Σ*" is exactly non-reachability of a non-accepting subset in the subset automaton,
+  and $\overline{PATH}$ is NL-complete (coNL = NL, Immerman–Szelepcsényi). Added the subsection
+  "Why not just reduce ALL_NFA to $\overline{PATH}$?" above. The characterization is **correct** but
+  is not a **reduction**: the subset graph has 2ⁿ nodes, and both logspace and poly-time transducers
+  can emit only polynomially many output symbols (a halting logspace machine runs in poly time), so
+  the map is not computable within budget. No repair exists either — ALL_NFA ≤_L $\overline{PATH}$
+  would put ALL_NFA in NL, contradicting NL ⊊ PSPACE. Also recorded that **complementing the target
+  never helps** when the target class is closed under complement: $\overline{PATH}$ ∈ P just as
+  PATH is, so ALL_NFA ≤p $\overline{PATH}$ ⟺ ALL_NFA ∈ P ⟺ P = PSPACE, identical to the PATH
+  version. The takeaway: **you can search the subset graph, you just can't write it down** — an
+  algorithm may explore a graph it never materializes, a reduction must hand it over — which is why
+  the PSPACE proof simulates the search (Savitch on 2ⁿ nodes = O(n²) space). Contrasts with Q8.א,
+  where the run graph is only polynomial and therefore *can* be emitted in logspace.
